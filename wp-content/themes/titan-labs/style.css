@@ -1,0 +1,18 @@
+/*
+Theme Name: Titan Labs
+Theme URI: https://titanlabs.eu/
+Author: Titan Labs
+Description: Lab-verified research peptides for Europe. Custom WooCommerce theme for Titan Labs with light/dark mode, COA verification tables and stack builder.
+Version: 1.0.0
+Requires at least: 6.5
+Tested up to: 7.0
+Requires PHP: 8.1
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: titan-labs
+Tags: e-commerce, woocommerce, custom-colors, dark-mode, translation-ready
+WC requires at least: 8.0
+WC tested up to: 10.4
+*/
+
+/* Styles are compiled in assets/css/app.css — this file exists for theme metadata. */

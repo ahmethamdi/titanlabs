@@ -1,0 +1,33 @@
+# WordPress core — reinstalled via wp core download
+/wp-admin/
+/wp-includes/
+/wp-*.php
+/index.php
+/xmlrpc.php
+/license.txt
+/readme.html
+
+# Config & secrets
+wp-config.php
+
+# Uploads and generated content
+/wp-content/uploads/
+/wp-content/upgrade/
+/wp-content/cache/
+/wp-content/debug.log
+/wp-content/languages/
+
+# Third-party plugins (installed via composer/wp-cli)
+/wp-content/plugins/
+!/wp-content/plugins/index.php
+
+# Default themes
+/wp-content/themes/twenty*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+node_modules/
