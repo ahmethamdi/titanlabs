@@ -101,7 +101,7 @@ defined( 'ABSPATH' ) || exit;
 	</div>
 </div>
 
-<?php if ( get_theme_mod( 'titan_age_gate', true ) ) : ?>
+<?php if ( get_theme_mod( 'titan_age_gate', true ) && ! titan_is_elementor_canvas() ) : ?>
 	<div class="tl-agegate" role="dialog" aria-modal="true" aria-labelledby="tl-agegate-title">
 		<div class="tl-agegate__box">
 			<span class="tl-logo__mark" aria-hidden="true" style="margin:0 auto .9rem">TL</span>

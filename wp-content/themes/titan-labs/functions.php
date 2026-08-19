@@ -111,10 +111,27 @@ function titan_resource_hints( $hints, $relation ) {
 add_filter( 'wp_resource_hints', 'titan_resource_hints', 10, 2 );
 
 /**
+ * Whether we are rendering inside the Elementor editor canvas or preview.
+ *
+ * @return bool
+ */
+function titan_is_elementor_canvas() {
+	if ( ! did_action( 'elementor/loaded' ) || ! class_exists( '\Elementor\Plugin' ) ) {
+		return false;
+	}
+
+	$plugin = \Elementor\Plugin::$instance;
+
+	return ( isset( $plugin->editor ) && $plugin->editor->is_edit_mode() )
+		|| ( isset( $plugin->preview ) && $plugin->preview->is_preview_mode() );
+}
+
+/**
  * Theme/age-gate boot script — runs before paint to avoid a flash.
  */
 function titan_boot_script() {
-	$gate = get_theme_mod( 'titan_age_gate', true ) ? 'true' : 'false';
+	// Never gate the Elementor canvas — it would block editing.
+	$gate = ( get_theme_mod( 'titan_age_gate', true ) && ! titan_is_elementor_canvas() ) ? 'true' : 'false';
 	?>
 	<script id="titan-boot">
 	(function () {
@@ -527,6 +544,32 @@ function titan_rating_markup( $product ) {
 }
 
 /**
+ * Whether the given page was built with Elementor.
+ *
+ * Used by front-page.php to hand rendering over to Elementor when the
+ * homepage has been laid out visually, and fall back to the coded
+ * template parts otherwise.
+ *
+ * @param int $post_id Optional post id. Defaults to the queried object.
+ * @return bool
+ */
+function titan_is_built_with_elementor( $post_id = 0 ) {
+	if ( ! did_action( 'elementor/loaded' ) || ! class_exists( '\Elementor\Plugin' ) ) {
+		return false;
+	}
+
+	$post_id = $post_id ? (int) $post_id : (int) get_queried_object_id();
+	if ( ! $post_id ) {
+		return false;
+	}
+
+	$document = \Elementor\Plugin::$instance->documents->get( $post_id );
+
+	return $document instanceof \Elementor\Core\Base\Document
+		&& $document->is_built_with_elementor();
+}
+
+/**
  * Excerpt length.
  */
 function titan_excerpt_length() {
@@ -556,3 +599,4 @@ add_filter( 'body_class', 'titan_body_class' );
 
 require_once TITAN_DIR . '/inc/customizer.php';
 require_once TITAN_DIR . '/inc/nav-walker.php';
+require_once TITAN_DIR . '/inc/elementor/loader.php';
