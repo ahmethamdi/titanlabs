@@ -162,6 +162,24 @@ Five registered locations: `primary`, `footer-shop`, `footer-goal`,
 `footer-help`, `footer-legal`. Each footer column falls back to a sensible
 default link list when no menu is assigned.
 
+## Content pages
+
+Eleven pages ship with designed layouts rather than plain text — About, FAQ,
+Contact, Shipping, Refunds, Research Use Only, Privacy, Terms, Legal Notice,
+Wholesale and Partner Programme.
+
+Each is stored as a single Gutenberg custom-HTML block using the theme's own
+component classes (`tl-phero`, `tl-faq`, `tl-contact-card`, `tl-steps`,
+`tl-policy-table`, `tl-callout`, `tl-ctaband`), and uses the **Full Width
+(Elementor)** page template so its hero runs edge to edge. Edit them in
+**Pages → [page] → Edit**, or rebuild any of them in Elementor.
+
+Placeholders to replace before launch:
+
+- Legal Notice — company address, register number, VAT ID and responsible person
+- Contact/Wholesale/Partner — the `@titanlabs.eu` email addresses
+- Shipping and refund thresholds if your terms differ from the defaults
+
 ## Note on product imagery
 
 Product images are generated Titan Labs-branded renders. Replace them with real

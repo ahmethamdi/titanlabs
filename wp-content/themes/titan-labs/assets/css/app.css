@@ -1261,3 +1261,273 @@ html.tl-gated .tl-agegate { display: grid; }
     scroll-behavior: auto !important;
   }
 }
+
+/* ==========================================================================
+   Content pages — hero, feature cards, FAQ, contact, policy
+   ========================================================================== */
+
+/* Page hero with eyebrow + lede, used across content pages. */
+.tl-phero {
+  position: relative;
+  overflow: hidden;
+  padding-block: clamp(2.5rem, 1.8rem + 3.5vw, 5rem);
+  background:
+    radial-gradient(900px 420px at 80% -20%,
+      color-mix(in srgb, var(--color-accent) 16%, transparent), transparent 60%),
+    linear-gradient(180deg, var(--color-panel), var(--color-canvas));
+  border-bottom: 1px solid var(--color-line);
+}
+.tl-phero__inner > * { max-width: 62ch; }
+.tl-phero h1 { margin-bottom: .35em; }
+.tl-phero__lede {
+  font-size: clamp(1rem, .95rem + .3vw, 1.15rem);
+  color: var(--color-muted);
+  margin-bottom: 0;
+}
+.tl-phero__actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.75rem; }
+
+/* Split section: text next to a bordered panel. */
+.tl-split {
+  display: grid;
+  gap: clamp(1.5rem, 1rem + 3vw, 3.5rem);
+  align-items: center;
+}
+@media (min-width: 900px) { .tl-split { grid-template-columns: 1.1fr .9fr; } }
+.tl-split--reverse > :first-child { order: 2; }
+@media (max-width: 899px) { .tl-split--reverse > :first-child { order: 0; } }
+
+/* Bordered stat/spec panel. */
+.tl-panelcard {
+  padding: clamp(1.25rem, 1rem + 1.5vw, 2rem);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+.tl-panelcard__head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: .75rem; padding-bottom: .9rem; margin-bottom: 1.1rem;
+  border-bottom: 1px solid var(--color-line);
+}
+.tl-panelcard__head h3 { margin: 0; font-size: 1rem; }
+.tl-speclist { display: grid; gap: .85rem; margin: 0; }
+.tl-speclist > div {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 1rem; font-size: .92rem;
+}
+.tl-speclist dt { color: var(--color-muted); }
+.tl-speclist dd {
+  margin: 0; font-family: var(--font-display);
+  font-weight: 700; color: var(--color-ink-strong);
+  text-align: right;
+}
+
+/* FAQ accordion. */
+.tl-faq { display: grid; gap: .7rem; }
+.tl-faq__item {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  overflow: hidden;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+.tl-faq__item[open] {
+  border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
+  box-shadow: var(--shadow-sm);
+}
+.tl-faq__item > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.05rem 1.25rem;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--color-ink-strong);
+}
+.tl-faq__item > summary::-webkit-details-marker { display: none; }
+.tl-faq__item > summary:hover { color: var(--color-accent-ink); }
+.tl-faq__item > summary::after {
+  content: "";
+  flex: none;
+  width: 11px; height: 11px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform .2s ease;
+  opacity: .55;
+}
+.tl-faq__item[open] > summary::after { transform: rotate(-135deg) translate(-3px, -3px); }
+.tl-faq__answer {
+  padding: 0 1.25rem 1.15rem;
+  color: var(--color-muted);
+  font-size: .94rem;
+  line-height: 1.65;
+}
+.tl-faq__answer > :last-child { margin-bottom: 0; }
+.tl-faq__answer ul { padding-inline-start: 1.15rem; margin: .5rem 0; }
+.tl-faq__answer li { margin-bottom: .35rem; }
+
+/* Contact method cards. */
+.tl-contact-card {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  padding: 1.5rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  height: 100%;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.tl-contact-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
+  box-shadow: var(--shadow);
+}
+.tl-contact-card__icon {
+  width: 42px; height: 42px;
+  display: grid; place-items: center;
+  border-radius: 11px;
+  margin-bottom: .5rem;
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  color: var(--color-accent);
+}
+.tl-contact-card__icon svg { width: 22px; height: 22px; }
+.tl-contact-card h3 { margin: 0; font-size: 1.05rem; }
+.tl-contact-card p { margin: 0; font-size: .9rem; color: var(--color-muted); }
+.tl-contact-card__value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-ink-strong);
+  word-break: break-word;
+}
+.tl-contact-card .tl-btn { margin-top: auto; align-self: flex-start; }
+
+/* Numbered step list. */
+.tl-steps { display: grid; gap: 1rem; counter-reset: tlstep; margin: 0; padding: 0; list-style: none; }
+.tl-steps li {
+  position: relative;
+  padding: 1.1rem 1.25rem 1.1rem 3.6rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+.tl-steps li::before {
+  counter-increment: tlstep;
+  content: counter(tlstep);
+  position: absolute;
+  left: 1.15rem; top: 1.05rem;
+  width: 30px; height: 30px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--color-accent-cta);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: .85rem;
+  font-weight: 700;
+}
+.tl-steps h3 { margin: 0 0 .2rem; font-size: 1rem; }
+.tl-steps p { margin: 0; font-size: .9rem; color: var(--color-muted); }
+
+/* Policy table. */
+.tl-policy-table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+.tl-policy-table th,
+.tl-policy-table td {
+  padding: .8rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-line);
+}
+.tl-policy-table thead th {
+  background: var(--color-panel);
+  font-size: .74rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--color-muted);
+  font-weight: 600;
+}
+.tl-policy-table tbody tr:last-child td { border-bottom: 0; }
+.tl-policy-table td:last-child {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-ink-strong);
+  white-space: nowrap;
+}
+
+/* Callout box. */
+.tl-callout {
+  display: flex;
+  gap: .9rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--color-line);
+  border-inline-start: 3px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-panel);
+  font-size: .92rem;
+  color: var(--color-muted);
+}
+.tl-callout strong { color: var(--color-ink-strong); }
+.tl-callout > svg { flex: none; width: 20px; height: 20px; color: var(--color-accent); margin-top: .1rem; }
+.tl-callout > div > :last-child { margin-bottom: 0; }
+.tl-callout--warn { border-inline-start-color: var(--nv-danger); }
+.tl-callout--warn > svg { color: var(--nv-danger); }
+
+/* Table of contents for long policy pages. */
+.tl-toc {
+  max-width: 78ch;
+  margin-inline: auto;
+  padding: 1.15rem 1.35rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-panel);
+  margin-bottom: 2rem;
+}
+.tl-toc h2 {
+  font-family: var(--font-sans);
+  font-size: .76rem;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--color-faint);
+  margin: 0 0 .7rem;
+}
+.tl-toc ol { margin: 0; padding-inline-start: 1.2rem; display: grid; gap: .35rem; }
+.tl-toc a { font-size: .92rem; color: var(--color-muted); }
+.tl-toc a:hover { color: var(--color-accent); }
+
+/* Policy pages: constrain the reading column, keep tables full width. */
+.tl-policy-doc { max-width: 78ch; margin-inline: auto; }
+.tl-policy-doc .tl-tablewrap { max-width: none; }
+
+/* Anchored policy section. */
+.tl-policy-section { scroll-margin-top: 6rem; padding-block: 1.5rem; }
+.tl-policy-section + .tl-policy-section { border-top: 1px solid var(--color-line); }
+.tl-policy-section h2 { font-size: 1.35rem; }
+
+/* CTA band. */
+.tl-ctaband {
+  display: grid;
+  gap: 1.25rem;
+  align-items: center;
+  padding: clamp(1.5rem, 1rem + 2vw, 2.75rem);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(700px 300px at 12% 0%,
+      color-mix(in srgb, var(--color-accent) 26%, transparent), transparent 65%),
+    var(--nv-fill);
+  color: var(--nv-on-fill);
+}
+@media (min-width: 800px) { .tl-ctaband { grid-template-columns: 1.5fr .5fr; } }
+.tl-ctaband h2 { color: var(--nv-on-fill); margin-bottom: .4rem; }
+.tl-ctaband p { margin: 0; opacity: .82; font-size: .95rem; }
+.tl-ctaband .tl-btn--primary { background: var(--color-accent-glow); color: #0b1220; }
+.tl-ctaband .tl-btn--primary:hover { background: #fff; color: #0b1220; }
+
+/* Last-updated stamp. */
+.tl-updated {
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-size: .8rem; color: var(--color-faint);
+}
