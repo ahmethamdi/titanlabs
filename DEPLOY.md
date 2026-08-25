@@ -121,9 +121,26 @@ wp option update woocommerce_coming_soon no
 wp option update woocommerce_store_pages_only no
 ```
 
-**Missing `.htaccess`.** It is not in git because it is environment-specific.
-Without it every URL except the homepage 404s. `setup.sh` writes one with the
-correct `RewriteBase`; otherwise just re-save **Settings → Permalinks**.
+**A wrong `.htaccess`.** It is environment-specific — `RewriteBase` is
+`/titanlabs/` in the local XAMPP subfolder but `/` on the server — so it is
+gitignored and `setup.sh` writes the right one per host.
+
+It was committed by mistake until 2026-08-25, and a deployment then overwrote
+the server's copy with the XAMPP one. The symptom is distinctive: **the
+homepage loads but every other URL returns 500**, because each rewritten
+request is sent to a `/titanlabs/` path that does not exist there.
+
+Two checks that separate this from a PHP fault, both runnable from anywhere:
+
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" "https://demo2.34devs.com/?post_type=product"  # 200 → PHP is fine
+curl -s -o /dev/null -w "%{http_code}\n" "https://demo2.34devs.com/shop/"               # 500 → rewrite is broken
+```
+
+Same content, one via query string and one via permalink: if the first works
+and the second does not, it is the rewrite layer, not the theme. Fix by
+re-saving **Settings → Permalinks** in wp-admin (which rewrites the file), or
+re-running `setup.sh`. Missing it entirely gives 404s rather than 500s.
 
 ---
 

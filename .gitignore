@@ -10,6 +10,11 @@
 # Config & secrets
 wp-config.php
 
+# Environment-specific: RewriteBase differs between the XAMPP subfolder and the
+# server's document root, so a committed copy takes the whole live site down
+# with a 500 on every pretty permalink. setup.sh writes the right one per host.
+.htaccess
+
 # Uploads and generated content
 /wp-content/uploads/
 /wp-content/upgrade/
