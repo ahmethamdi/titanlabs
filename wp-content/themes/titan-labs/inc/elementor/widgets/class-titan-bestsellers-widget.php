@@ -221,7 +221,7 @@ class Titan_Bestsellers_Widget extends Titan_Widget_Base {
 					aria-labelledby="<?php echo esc_attr( "{$uid}-tab-{$set['key']}" ); ?>"
 					<?php echo 0 === $i ? '' : 'hidden'; ?>>
 
-					<div class="tl-grid tl-grid--<?php echo esc_attr( $s['columns'] ?? '4' ); ?>">
+					<div class="tl-grid tl-grid--<?php echo esc_attr( $s['columns'] ?? '4' ); ?> tl-grid--scroll-mobile">
 						<?php foreach ( $set['products'] as $product ) : ?>
 							<?php
 							set_query_var( 'titan_product', $product );

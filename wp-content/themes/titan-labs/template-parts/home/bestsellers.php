@@ -67,7 +67,7 @@ if ( ! $sets ) {
 					aria-labelledby="tab-<?php echo esc_attr( $slug ); ?>"
 					<?php echo 0 === $i ? '' : 'hidden'; ?>>
 
-					<div class="tl-grid tl-grid--4">
+					<div class="tl-grid tl-grid--4 tl-grid--scroll-mobile">
 						<?php foreach ( $set['products'] as $product ) : ?>
 							<?php
 							set_query_var( 'titan_product', $product );

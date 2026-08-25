@@ -49,6 +49,11 @@
     }
     if (e.target.closest('[data-drawer-close]') || e.target.matches('.tl-drawer__scrim')) {
       closeDrawer();
+      return;
+    }
+    // Navigating away from an in-page anchor leaves the drawer open otherwise.
+    if (drawer && drawer.contains(e.target) && e.target.closest('a')) {
+      closeDrawer();
     }
   });
 
@@ -70,7 +75,14 @@
         tab.setAttribute('aria-selected', String(selected));
         tab.setAttribute('tabindex', selected ? '0' : '-1');
         var panel = document.getElementById(tab.getAttribute('aria-controls'));
-        if (panel) panel.hidden = !selected;
+        if (!panel) return;
+        panel.hidden = !selected;
+        // A hidden panel has no layout, so its scroller keeps a stale offset.
+        if (selected) {
+          panel.querySelectorAll('.tl-grid--scroll-mobile').forEach(function (strip) {
+            strip.scrollLeft = 0;
+          });
+        }
       });
     }
 

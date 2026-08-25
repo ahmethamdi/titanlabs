@@ -65,10 +65,9 @@ defined( 'ABSPATH' ) || exit;
 				</a>
 			<?php endif; ?>
 
-			<button type="button" class="tl-iconbtn" data-drawer-open aria-expanded="false"
+			<button type="button" class="tl-iconbtn tl-iconbtn--menu" data-drawer-open aria-expanded="false"
 				aria-controls="tl-drawer"
-				aria-label="<?php esc_attr_e( 'Open menu', 'titan-labs' ); ?>"
-				style="display:inline-grid">
+				aria-label="<?php esc_attr_e( 'Open menu', 'titan-labs' ); ?>">
 				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
 					stroke-linecap="round" aria-hidden="true">
 					<path d="M3 6h18M3 12h18M3 18h18"/>

@@ -150,10 +150,11 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
    ========================================================================== */
 
 .tl-container {
+  --tl-gutter: 20px;
   width: 100%;
   max-width: var(--container);
   margin-inline: auto;
-  padding-inline: 20px;
+  padding-inline: var(--tl-gutter);
 }
 
 .tl-section { padding-block: clamp(2.5rem, 1.5rem + 4vw, 6rem); }
@@ -178,6 +179,28 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
 .tl-grid--2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
 .tl-grid--3 { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
 .tl-grid--4 { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+
+/* Below the 4-up breakpoint a stacked product grid turns into an endless
+   column, so swipe it sideways instead. Stays a plain grid on desktop. */
+@media (max-width: 899px) {
+  .tl-grid--scroll-mobile {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(216px, 74vw);
+    grid-template-columns: none;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    /* Bleed to the viewport edges so cards scroll out of the container. */
+    margin-inline: calc(var(--tl-gutter, 20px) * -1);
+    padding-inline: var(--tl-gutter, 20px);
+    padding-bottom: .75rem;
+  }
+  .tl-grid--scroll-mobile > * {
+    scroll-snap-align: start;
+  }
+}
 
 .screen-reader-text {
   position: absolute !important;
@@ -383,6 +406,7 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
 }
 @media (min-width: 1024px) { .tl-header__actions { margin-inline-start: 0; } }
 
+
 .tl-iconbtn {
   display: inline-grid;
   place-items: center;
@@ -399,6 +423,10 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
   color: var(--color-accent-ink);
 }
 .tl-iconbtn svg { width: 20px; height: 20px; }
+
+/* Hamburger only where .tl-nav is hidden. Must follow .tl-iconbtn's own
+   display declaration to win on equal specificity. */
+@media (min-width: 1024px) { .tl-iconbtn--menu { display: none; } }
 
 .tl-cart { position: relative; }
 .tl-cart__count {
@@ -454,16 +482,45 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 1rem;
 }
-.tl-drawer nav ul { list-style: none; margin: 0; padding: 0; }
-.tl-drawer nav a {
+/* The drawer reuses titan_primary_nav(), which emits .tl-nav__list — a
+   horizontal flex bar with absolutely-positioned hover dropdowns. Both have to
+   be unwound here or the menu renders as one clipped row with invisible
+   sub-menus. */
+.tl-drawer nav ul,
+.tl-drawer nav .tl-nav__list {
+  display: block;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+}
+.tl-drawer nav li { position: static; }
+.tl-drawer nav a,
+.tl-drawer nav .tl-nav__list a {
   display: block;
   padding: .7rem .2rem;
   border-bottom: 1px solid var(--color-line);
+  border-radius: 0;
   color: var(--color-ink);
+  font-size: 1rem;
   font-weight: 500;
+  white-space: normal;
 }
-.tl-drawer .sub-menu { padding-inline-start: .9rem !important; }
-.tl-drawer .sub-menu a { font-size: .9rem; color: var(--color-muted); }
+.tl-drawer nav .tl-nav__list .sub-menu {
+  position: static;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  padding-inline-start: .9rem;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+.tl-drawer nav .sub-menu a { font-size: .9rem; color: var(--color-muted); }
 
 /* ==========================================================================
    Hero
@@ -681,6 +738,21 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
   flex-wrap: wrap;
   gap: .4rem;
   margin-bottom: 1.5rem;
+}
+/* Keep the format tabs on one swipeable row on phones instead of wrapping. */
+@media (max-width: 899px) {
+  .tl-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-inline: calc(var(--tl-gutter, 20px) * -1);
+    padding-inline: var(--tl-gutter, 20px);
+    padding-bottom: .25rem;
+  }
+  .tl-tabs::-webkit-scrollbar { display: none; }
+  .tl-tabs button { flex: 0 0 auto; }
 }
 .tl-tabs button {
   padding: .5rem 1rem;

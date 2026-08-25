@@ -74,6 +74,18 @@ add_action( 'after_setup_theme', 'titan_content_width', 0 );
 /**
  * Front-end assets.
  */
+/**
+ * Cache-busting version for a theme asset: its mtime, so edits land without a
+ * hard refresh. Falls back to TITAN_VERSION if the file is unreadable.
+ *
+ * @param string $relative Path relative to the theme root, e.g. '/assets/css/app.css'.
+ * @return string
+ */
+function titan_asset_version( $relative ) {
+	$path = TITAN_DIR . $relative;
+	return file_exists( $path ) ? (string) filemtime( $path ) : TITAN_VERSION;
+}
+
 function titan_assets() {
 	wp_enqueue_style(
 		'titan-fonts',
@@ -82,10 +94,10 @@ function titan_assets() {
 		null
 	);
 
-	wp_enqueue_style( 'titan-app', TITAN_URI . '/assets/css/app.css', array(), TITAN_VERSION );
-	wp_enqueue_style( 'titan-style', get_stylesheet_uri(), array( 'titan-app' ), TITAN_VERSION );
+	wp_enqueue_style( 'titan-app', TITAN_URI . '/assets/css/app.css', array(), titan_asset_version( '/assets/css/app.css' ) );
+	wp_enqueue_style( 'titan-style', get_stylesheet_uri(), array( 'titan-app' ), titan_asset_version( '/style.css' ) );
 
-	wp_enqueue_script( 'titan-app', TITAN_URI . '/assets/js/app.js', array(), TITAN_VERSION, true );
+	wp_enqueue_script( 'titan-app', TITAN_URI . '/assets/js/app.js', array(), titan_asset_version( '/assets/js/app.js' ), true );
 	wp_localize_script( 'titan-app', 'titanData', array(
 		'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
 		'nonce'    => wp_create_nonce( 'titan_nonce' ),
