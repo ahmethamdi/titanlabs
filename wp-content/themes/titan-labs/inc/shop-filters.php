@@ -461,8 +461,8 @@ function titan_render_filters() {
 function titan_render_shop_results() {
 	$total = (int) wc_get_loop_prop( 'total' );
 	?>
-	<div class="tl-shop__toolbar">
-		<p class="tl-shop__count" aria-live="polite" data-result-count>
+	<div class="tl-shoplayout__toolbar">
+		<p class="tl-shoplayout__count" aria-live="polite" data-result-count>
 			<?php
 			printf(
 				/* translators: %s: number of products */
@@ -495,9 +495,9 @@ function titan_render_shop_results() {
 
 	} else {
 		?>
-		<div class="tl-shop__empty">
-			<p class="tl-shop__emptytitle"><?php esc_html_e( 'No products match those filters', 'titan-labs' ); ?></p>
-			<p class="tl-shop__emptytext">
+		<div class="tl-shoplayout__empty">
+			<p class="tl-shoplayout__emptytitle"><?php esc_html_e( 'No products match those filters', 'titan-labs' ); ?></p>
+			<p class="tl-shoplayout__emptytext">
 				<?php esc_html_e( 'Try widening the price range or clearing a filter.', 'titan-labs' ); ?>
 			</p>
 			<a class="tl-btn tl-btn--primary tl-btn--sm" href="<?php echo esc_url( titan_filter_clear_url() ); ?>">

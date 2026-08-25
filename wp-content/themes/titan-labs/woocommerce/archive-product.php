@@ -64,24 +64,24 @@ $total = (int) wc_get_loop_prop( 'total' );
 do_action( 'woocommerce_before_main_content' );
 ?>
 
-<div class="tl-shop">
+<div class="tl-shoplayout">
 
-	<aside class="tl-shop__sidebar">
+	<aside class="tl-shoplayout__sidebar">
 		<?php titan_render_filters(); ?>
 	</aside>
 
-	<div class="tl-shop__main" data-shop-main>
+	<div class="tl-shoplayout__main" data-shop-main>
 		<?php titan_render_shop_results(); ?>
 	</div>
 
-	<button type="button" class="tl-shop__mobilebar" data-filters-open
+	<button type="button" class="tl-shoplayout__mobilebar" data-filters-open
 		aria-controls="tl-filtersheet" aria-expanded="false">
 		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
 			stroke-linecap="round" aria-hidden="true">
 			<path d="M3 6h18M7 12h10M10 18h4"/>
 		</svg>
 		<?php esc_html_e( 'Filter', 'titan-labs' ); ?>
-		<span class="tl-shop__mobilecount" data-filter-badge<?php echo titan_active_filters() ? '' : ' hidden'; ?>>
+		<span class="tl-shoplayout__mobilecount" data-filter-badge<?php echo titan_active_filters() ? '' : ' hidden'; ?>>
 			<?php echo esc_html( (string) count( titan_active_filters(), COUNT_RECURSIVE ) - count( titan_active_filters() ) ); ?>
 		</span>
 	</button>

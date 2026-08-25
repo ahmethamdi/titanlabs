@@ -358,7 +358,7 @@
     function syncSheet() {
       // The sheet shows the same controls as the sidebar; clone rather than
       // render twice so they can never disagree.
-      var sidebar = document.querySelector('.tl-shop__sidebar .tl-filters');
+      var sidebar = document.querySelector('.tl-shoplayout__sidebar .tl-filters');
       if (sheetBody && sidebar) {
         sheetBody.innerHTML = '';
         sheetBody.appendChild(sidebar.cloneNode(true));
@@ -396,7 +396,7 @@
 
           shopMain.innerHTML = res.data.results;
 
-          var sidebar = document.querySelector('.tl-shop__sidebar');
+          var sidebar = document.querySelector('.tl-shoplayout__sidebar');
           if (sidebar) sidebar.innerHTML = res.data.filters;
 
           setBadge(res.data.count);
@@ -404,7 +404,7 @@
 
           if (push) window.history.pushState({ titanFilter: url }, '', url);
 
-          var top = document.querySelector('.tl-shop');
+          var top = document.querySelector('.tl-shoplayout');
           if (top && top.getBoundingClientRect().top < 0) {
             top.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
@@ -433,7 +433,7 @@
       }
 
       // Pagination inside the filtered grid.
-      var page = e.target.closest('.tl-shop__main .woocommerce-pagination a');
+      var page = e.target.closest('.tl-shoplayout__main .woocommerce-pagination a');
       if (page && page.getAttribute('href')) {
         e.preventDefault();
         loadFilters(page.getAttribute('href'), true);
@@ -459,7 +459,7 @@
 
     // Sorting posts through the same path.
     document.addEventListener('change', function (e) {
-      var select = e.target.closest('.tl-shop__main .woocommerce-ordering select');
+      var select = e.target.closest('.tl-shoplayout__main .woocommerce-ordering select');
       if (!select) return;
       e.preventDefault();
       var url = new URL(window.location.href);

@@ -2028,10 +2028,17 @@ html.tl-gated .tl-agegate { display: grid; }
    Shop filters
    ========================================================================== */
 
-.tl-shop { display: block; }
+/*
+ * The archive header already provides the breathing room; the wrapper's own
+ * section padding on top of it pushed the grid most of a screen down.
+ */
+.woocommerce-shop main.tl-section,
+.tax-product_cat main.tl-section { padding-top: .5rem; }
+
+.tl-shoplayout { display: block; }
 
 @media (min-width: 1024px) {
-  .tl-shop {
+  .tl-shoplayout {
     display: grid;
     /* Left rail: users spend markedly more time on the left half, and it is
        where every other store puts filters. */
@@ -2041,15 +2048,15 @@ html.tl-gated .tl-agegate { display: grid; }
   }
 }
 
-.tl-shop__sidebar { display: none; }
+.tl-shoplayout__sidebar { display: none; }
 @media (min-width: 1024px) {
-  .tl-shop__sidebar { display: block; position: sticky; top: 1.5rem; }
+  .tl-shoplayout__sidebar { display: block; position: sticky; top: 1.5rem; }
 }
 
-.tl-shop__main { min-width: 0; transition: opacity .18s ease; }
-.tl-shop__main.is-loading { opacity: .45; pointer-events: none; }
+.tl-shoplayout__main { min-width: 0; transition: opacity .18s ease; }
+.tl-shoplayout__main.is-loading { opacity: .45; pointer-events: none; }
 
-.tl-shop__toolbar {
+.tl-shoplayout__toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2057,7 +2064,7 @@ html.tl-gated .tl-agegate { display: grid; }
   flex-wrap: wrap;
   margin-bottom: 1rem;
 }
-.tl-shop__count {
+.tl-shoplayout__count {
   margin: 0;
   font-family: var(--font-mono);
   font-size: .85rem;
@@ -2164,24 +2171,24 @@ html.tl-gated .tl-agegate { display: grid; }
   font-weight: 500;
 }
 
-.tl-shop__empty {
+.tl-shoplayout__empty {
   padding: 3rem 1.5rem;
   text-align: center;
   border: 1px dashed var(--color-line);
   border-radius: var(--radius-lg);
   background: var(--color-panel);
 }
-.tl-shop__emptytitle {
+.tl-shoplayout__emptytitle {
   font-family: var(--font-display);
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--color-ink-strong);
   margin: 0 0 .4rem;
 }
-.tl-shop__emptytext { color: var(--color-muted); font-size: .9rem; margin: 0 0 1.2rem; }
+.tl-shoplayout__emptytext { color: var(--color-muted); font-size: .9rem; margin: 0 0 1.2rem; }
 
 /* Mobile: a persistent bar in the thumb zone, opening a bottom sheet. */
-.tl-shop__mobilebar {
+.tl-shoplayout__mobilebar {
   position: fixed;
   left: 50%;
   bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
@@ -2202,10 +2209,10 @@ html.tl-gated .tl-agegate { display: grid; }
   box-shadow: var(--shadow-lg);
   cursor: pointer;
 }
-.tl-shop__mobilebar svg { width: 18px; height: 18px; }
-@media (min-width: 1024px) { .tl-shop__mobilebar { display: none; } }
+.tl-shoplayout__mobilebar svg { width: 18px; height: 18px; }
+@media (min-width: 1024px) { .tl-shoplayout__mobilebar { display: none; } }
 
-.tl-shop__mobilecount {
+.tl-shoplayout__mobilecount {
   display: inline-grid;
   place-items: center;
   min-width: 20px; height: 20px;
@@ -2270,7 +2277,7 @@ html.tl-gated .tl-agegate { display: grid; }
 
 /* The floating bar would otherwise sit on top of the last row of cards. */
 @media (max-width: 1023px) {
-  .tl-shop__main { padding-bottom: 4.5rem; }
+  .tl-shoplayout__main { padding-bottom: 4.5rem; }
 }
 
 /* WooCommerce prints SKU and categories as one run-on line mid-column. */
