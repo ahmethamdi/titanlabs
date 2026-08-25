@@ -1083,6 +1083,25 @@ function titan_get_coa_rows( $limit = 200 ) {
 }
 
 /**
+ * [titan_coa] — the batch table with its search and filter controls.
+ *
+ * Page content lives in the database and never travels through git, so the
+ * Lab Results page holds only this shortcode and the markup stays in the
+ * theme where it can be versioned.
+ *
+ * @param array<string, string> $atts Shortcode attributes. `limit` caps rows.
+ * @return string
+ */
+function titan_coa_shortcode( $atts ) {
+	$atts = shortcode_atts( array( 'limit' => 60 ), $atts, 'titan_coa' );
+
+	ob_start();
+	get_template_part( 'template-parts/coa-table', null, array( 'limit' => (int) $atts['limit'] ) );
+	return (string) ob_get_clean();
+}
+add_shortcode( 'titan_coa', 'titan_coa_shortcode' );
+
+/**
  * Star-rating markup for a product.
  *
  * @param WC_Product $product Product.

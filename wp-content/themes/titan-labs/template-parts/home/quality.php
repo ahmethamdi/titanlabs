@@ -31,10 +31,10 @@ $features = array(
 );
 ?>
 
-<section class="tl-section tl-section--panel">
+<section class="tl-section">
 	<div class="tl-container">
 
-		<div class="tl-sectionhead">
+		<div class="tl-sectionhead tl-sectionhead--center">
 			<div>
 				<p class="tl-eyebrow"><?php esc_html_e( 'Quality assurance', 'titan-labs' ); ?></p>
 				<h2><?php esc_html_e( 'Tested. Verified. Documented.', 'titan-labs' ); ?></h2>

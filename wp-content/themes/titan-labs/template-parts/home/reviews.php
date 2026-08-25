@@ -44,10 +44,10 @@ $average = round( $sum / $total, 1 );
 $recent  = array_slice( $comments, 0, 6 );
 ?>
 
-<section class="tl-section">
+<section class="tl-section tl-section--panel">
 	<div class="tl-container">
 
-		<div class="tl-sectionhead">
+		<div class="tl-sectionhead tl-sectionhead--center">
 			<div>
 				<p class="tl-eyebrow"><?php esc_html_e( 'Verified reviews', 'titan-labs' ); ?></p>
 				<h2><?php esc_html_e( 'Trusted by researchers across Europe', 'titan-labs' ); ?></h2>

@@ -153,6 +153,20 @@ abstract class Titan_Widget_Base extends Widget_Base {
 				),
 			)
 		);
+
+		$this->add_control(
+			'head_align',
+			array(
+				'label'       => __( 'Heading alignment', 'titan-labs' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => 'start',
+				'options'     => array(
+					'start'  => __( 'Left', 'titan-labs' ),
+					'center' => __( 'Centred', 'titan-labs' ),
+				),
+				'description' => __( 'Centre a heading to break up a run of left-aligned sections.', 'titan-labs' ),
+			)
+		);
 	}
 
 	/**
@@ -171,7 +185,12 @@ abstract class Titan_Widget_Base extends Widget_Base {
 			return;
 		}
 
-		echo '<div class="tl-sectionhead"><div>';
+		$head_classes = array( 'tl-sectionhead' );
+		if ( 'center' === ( $settings['head_align'] ?? 'start' ) ) {
+			$head_classes[] = 'tl-sectionhead--center';
+		}
+
+		printf( '<div class="%s"><div>', esc_attr( implode( ' ', $head_classes ) ) );
 
 		if ( $eyebrow ) {
 			printf( '<p class="tl-eyebrow">%s</p>', esc_html( $eyebrow ) );

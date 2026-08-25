@@ -138,6 +138,24 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
 @media (max-width: 899px) { .tl-section { padding-block: 2.75rem; } }
 .tl-section--panel { background: var(--color-panel); }
 
+/*
+ * Every section led with the same left-aligned eyebrow and h2 on a near-white
+ * background, so eight of them in a row read as one undifferentiated column.
+ * These give the page a rhythm to scroll through: a centred head narrows the
+ * measure and signals a change of subject, and --tight pulls the two halves of
+ * a pair together so they group rather than repeat.
+ */
+.tl-sectionhead--center {
+  justify-content: center;
+  text-align: center;
+}
+.tl-sectionhead--center > div {
+  max-width: 62ch;
+  margin-inline: auto;
+}
+
+.tl-section--tight { padding-block-start: 0; }
+
 .tl-eyebrow {
   font-size: .75rem;
   font-weight: 600;
