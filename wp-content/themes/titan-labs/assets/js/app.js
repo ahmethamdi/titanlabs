@@ -112,6 +112,154 @@
   });
 
   /* ----------------------------------------------------------------
+   * Cart drawer
+   *
+   * Opens from the cart icon only — adding a product gives inline button
+   * feedback and bumps the badge instead, which is less disruptive while
+   * someone is still browsing.
+   * ------------------------------------------------------------- */
+  var cartDrawer = document.querySelector('[data-cart-drawer]');
+  var cartLastFocus = null;
+
+  function openCart() {
+    if (!cartDrawer) return;
+    cartLastFocus = document.activeElement;
+    cartDrawer.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    var focusable = cartDrawer.querySelector('.tl-cartdrawer__panel a, .tl-cartdrawer__panel button');
+    if (focusable) focusable.focus();
+  }
+
+  function closeCart() {
+    if (!cartDrawer) return;
+    cartDrawer.classList.remove('is-open');
+    document.body.style.overflow = '';
+    if (cartLastFocus && cartLastFocus.focus) cartLastFocus.focus();
+  }
+
+  function cartBusy(state) {
+    if (cartDrawer) cartDrawer.classList.toggle('is-busy', !!state);
+  }
+
+  document.addEventListener('click', function (e) {
+    var opener = e.target.closest('[data-cart-open]');
+    if (opener && cartDrawer) {
+      // Let the href stand as the no-JS fallback.
+      e.preventDefault();
+      openCart();
+      return;
+    }
+    if (e.target.closest('[data-cart-close]')) {
+      closeCart();
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && cartDrawer && cartDrawer.classList.contains('is-open')) {
+      closeCart();
+    }
+  });
+
+  /**
+   * Applies the fragment payload WooCommerce (or titan_set_qty) returns.
+   */
+  function applyFragments(fragments) {
+    if (!fragments) return;
+    Object.keys(fragments).forEach(function (selector) {
+      var target = document.querySelector(selector);
+      if (!target) return;
+      var tmp = document.createElement('div');
+      tmp.innerHTML = fragments[selector];
+      var replacement = tmp.firstElementChild;
+      if (replacement) target.replaceWith(replacement);
+    });
+    pulseBadge();
+  }
+
+  function pulseBadge() {
+    var badge = document.querySelector('.tl-cart__count');
+    if (!badge) return;
+    badge.classList.remove('is-bumped');
+    // Restart the animation on a fragment that was just swapped in.
+    void badge.offsetWidth;
+    badge.classList.add('is-bumped');
+  }
+
+  /**
+   * Quantity stepper and remove, both routed through titan_set_qty.
+   */
+  function setQty(key, qty) {
+    if (!window.titanData || !titanData.ajaxUrl) return;
+    cartBusy(true);
+
+    var body = new URLSearchParams();
+    body.set('action', 'titan_set_qty');
+    body.set('nonce', titanData.nonce);
+    body.set('key', key);
+    body.set('qty', String(qty));
+
+    fetch(titanData.ajaxUrl, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString(),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (res && res.success) applyFragments(res.data.fragments);
+      })
+      .catch(function () { /* leave the drawer as-is on a failed request */ })
+      .then(function () { cartBusy(false); });
+  }
+
+  document.addEventListener('click', function (e) {
+    var remove = e.target.closest('[data-cart-remove]');
+    if (remove) {
+      e.preventDefault();
+      setQty(remove.getAttribute('data-cart-remove'), 0);
+      return;
+    }
+
+    var step = e.target.closest('[data-qty-up], [data-qty-down]');
+    if (!step) return;
+    var wrap = step.closest('[data-qty]');
+    var input = wrap && wrap.querySelector('[data-cart-qty]');
+    if (!input) return;
+
+    var next = (parseInt(input.value, 10) || 0) + (step.hasAttribute('data-qty-up') ? 1 : -1);
+    if (next < 0) next = 0;
+    input.value = next;
+    setQty(input.getAttribute('data-cart-qty'), next);
+  });
+
+  document.addEventListener('change', function (e) {
+    var input = e.target.closest('[data-cart-qty]');
+    if (!input) return;
+    var qty = parseInt(input.value, 10);
+    if (isNaN(qty) || qty < 0) qty = 0;
+    setQty(input.getAttribute('data-cart-qty'), qty);
+  });
+
+  /**
+   * Inline feedback on the add-to-cart button. WooCommerce fires these on
+   * document, so this works for every product loop and the single page.
+   */
+  if (window.jQuery) {
+    jQuery(document.body).on('adding_to_cart', function (_e, button) {
+      if (button && button[0]) button[0].classList.add('is-adding');
+    });
+
+    jQuery(document.body).on('added_to_cart', function (_e, fragments, _hash, button) {
+      pulseBadge();
+      if (!button || !button[0]) return;
+      var el = button[0];
+      el.classList.remove('is-adding');
+      el.classList.add('is-added');
+      window.setTimeout(function () { el.classList.remove('is-added'); }, 1800);
+    });
+  }
+
+  /* ----------------------------------------------------------------
    * Tab groups (bestsellers: vials / pens / sprays / orals)
    * ------------------------------------------------------------- */
   document.querySelectorAll('[data-tabs]').forEach(function (group) {

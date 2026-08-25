@@ -217,9 +217,65 @@ function titan_cart_fragment( $fragments ) {
 	ob_start();
 	titan_cart_count_markup();
 	$fragments['span.tl-cart__count'] = ob_get_clean();
+
+	// The drawer redraws from the same fragment mechanism, so it stays in sync
+	// with the counter no matter what changed the cart.
+	ob_start();
+	get_template_part( 'template-parts/cart-drawer' );
+	$fragments['div[data-cart-content]'] = '<div class="tl-cartdrawer__content" data-cart-content>'
+		. ob_get_clean() . '</div>';
+
 	return $fragments;
 }
 add_filter( 'woocommerce_add_to_cart_fragments', 'titan_cart_fragment' );
+
+/**
+ * Sets a cart item's quantity from the drawer, then returns refreshed
+ * fragments. Quantity 0 removes the line.
+ */
+function titan_ajax_set_qty() {
+	check_ajax_referer( 'titan_nonce', 'nonce' );
+
+	if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
+		wp_send_json_error( array( 'message' => __( 'Cart unavailable.', 'titan-labs' ) ), 500 );
+	}
+
+	$key = isset( $_POST['key'] ) ? sanitize_text_field( wp_unslash( $_POST['key'] ) ) : '';
+	$qty = isset( $_POST['qty'] ) ? (int) $_POST['qty'] : -1;
+
+	if ( '' === $key || $qty < 0 || ! WC()->cart->get_cart_item( $key ) ) {
+		wp_send_json_error( array( 'message' => __( 'Invalid cart item.', 'titan-labs' ) ), 400 );
+	}
+
+	if ( 0 === $qty ) {
+		WC()->cart->remove_cart_item( $key );
+	} else {
+		WC()->cart->set_quantity( $key, $qty, true );
+	}
+
+	WC()->cart->calculate_totals();
+
+	// WooCommerce builds the fragment payload from this filter.
+	ob_start();
+	$fragments = apply_filters( 'woocommerce_add_to_cart_fragments', array() );
+	ob_end_clean();
+
+	wp_send_json_success( array(
+		'fragments' => $fragments,
+		'count'     => WC()->cart->get_cart_contents_count(),
+	) );
+}
+add_action( 'wp_ajax_titan_set_qty', 'titan_ajax_set_qty' );
+add_action( 'wp_ajax_nopriv_titan_set_qty', 'titan_ajax_set_qty' );
+
+/**
+ * Drops WooCommerce's "Your cart is currently empty" notice — the themed empty
+ * state in woocommerce/cart/cart-empty.php already says it, better.
+ */
+function titan_remove_empty_cart_notice() {
+	remove_action( 'woocommerce_cart_is_empty', 'wc_empty_cart_message', 10 );
+}
+add_action( 'init', 'titan_remove_empty_cart_notice' );
 
 /**
  * Renders the cart counter badge.

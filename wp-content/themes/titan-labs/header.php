@@ -55,6 +55,8 @@ defined( 'ABSPATH' ) || exit;
 
 			<?php if ( function_exists( 'wc_get_cart_url' ) ) : ?>
 				<a class="tl-iconbtn tl-cart" href="<?php echo esc_url( wc_get_cart_url() ); ?>"
+					data-cart-open
+					aria-controls="tl-cartdrawer"
 					aria-label="<?php esc_attr_e( 'View cart', 'titan-labs' ); ?>">
 					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
 						stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -99,6 +101,32 @@ defined( 'ABSPATH' ) || exit;
 		</nav>
 	</div>
 </div>
+
+<?php if ( function_exists( 'WC' ) ) : ?>
+	<div class="tl-cartdrawer" id="tl-cartdrawer" data-cart-drawer>
+		<div class="tl-cartdrawer__scrim" data-cart-close></div>
+		<div class="tl-cartdrawer__panel" role="dialog" aria-modal="true"
+			aria-label="<?php esc_attr_e( 'Shopping cart', 'titan-labs' ); ?>">
+
+			<div class="tl-cartdrawer__head">
+				<strong><?php esc_html_e( 'Your cart', 'titan-labs' ); ?></strong>
+				<button type="button" class="tl-iconbtn" data-cart-close
+					aria-label="<?php esc_attr_e( 'Close cart', 'titan-labs' ); ?>">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+						stroke-linecap="round" aria-hidden="true">
+						<path d="M18 6 6 18M6 6l12 12"/>
+					</svg>
+				</button>
+			</div>
+
+			<div class="tl-cartdrawer__content" data-cart-content>
+				<?php get_template_part( 'template-parts/cart-drawer' ); ?>
+			</div>
+
+			<div class="tl-cartdrawer__busy" aria-hidden="true"><span></span></div>
+		</div>
+	</div>
+<?php endif; ?>
 
 <?php if ( get_theme_mod( 'titan_age_gate', true ) && ! titan_is_elementor_canvas() ) : ?>
 	<div class="tl-agegate" role="dialog" aria-modal="true" aria-labelledby="tl-agegate-title">
