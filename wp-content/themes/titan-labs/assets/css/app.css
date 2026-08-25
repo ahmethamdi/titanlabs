@@ -2852,6 +2852,15 @@ html.tl-gated .tl-agegate { display: grid; }
   margin-bottom: 2.5rem;
 }
 
+/* The display scale belongs to editorial headings, not to a page label. A
+   utility title like "Cart" or "Checkout" set at the full h1 size shouts
+   without saying anything, so page headers get their own smaller step. */
+.tl-pagehero h1 {
+  font-size: clamp(2rem, 1.5rem + 2vw, 3rem);
+  letter-spacing: -.03em;
+  max-width: 22ch;
+}
+
 /* On a listing page the header's job is to get out of the way of the grid. */
 .tl-pagehero--shop {
   padding-block: clamp(1.35rem, 1rem + 1.5vw, 2.25rem);
