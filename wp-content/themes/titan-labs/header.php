@@ -30,14 +30,22 @@ defined( 'ABSPATH' ) || exit;
 <header class="tl-header">
 	<div class="tl-container tl-header__bar">
 
-		<a class="tl-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>">
-			<?php if ( has_custom_logo() ) : ?>
-				<?php the_custom_logo(); ?>
-			<?php else : ?>
+		<?php
+		/*
+		 * the_custom_logo() emits its own <a>, so wrapping it in another anchor
+		 * produced nested links. The browser unnested them, which left the
+		 * .tl-logo wrapper empty and collapsed the header grid — hence the
+		 * oversized logo and the icons dropping to a second row.
+		 */
+		if ( has_custom_logo() ) :
+			?>
+			<div class="tl-logo tl-logo--custom"><?php the_custom_logo(); ?></div>
+		<?php else : ?>
+			<a class="tl-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>">
 				<span class="tl-logo__mark" aria-hidden="true">TL</span>
 				<span><?php bloginfo( 'name' ); ?></span>
-			<?php endif; ?>
-		</a>
+			</a>
+		<?php endif; ?>
 
 		<nav class="tl-nav" aria-label="<?php esc_attr_e( 'Primary', 'titan-labs' ); ?>">
 			<?php titan_primary_nav(); ?>

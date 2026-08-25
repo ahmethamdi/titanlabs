@@ -316,7 +316,8 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
 /* Condensed on scroll — set by the scroll handler in app.js. */
 .tl-header.is-condensed .tl-header__bar { min-height: 56px; }
 .tl-header.is-condensed .tl-logo { font-size: 1rem; }
-.tl-header.is-condensed .tl-logo img { max-height: 28px; }
+.tl-header.is-condensed .tl-logo img,
+.tl-header.is-condensed .tl-logo .custom-logo { max-height: 28px; }
 .tl-header.is-condensed .tl-logo__mark { width: 28px; height: 28px; font-size: .82rem; }
 .tl-header.is-condensed { box-shadow: 0 1px 12px rgba(11, 18, 32, .07); }
 
@@ -343,7 +344,17 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
   white-space: nowrap;
 }
 .tl-logo:hover { color: var(--color-ink-strong); }
-.tl-logo img { max-height: 40px; width: auto; }
+/* WordPress prints the custom logo with its own link and intrinsic width
+   attributes, so the size has to be pinned on the image itself. */
+.tl-logo img,
+.tl-logo .custom-logo {
+  max-height: 40px;
+  width: auto;
+  height: auto;
+  display: block;
+}
+.tl-logo--custom { line-height: 0; }
+.tl-logo--custom .custom-logo-link { display: inline-flex; align-items: center; }
 .tl-logo__mark {
   width: 34px; height: 34px;
   display: grid; place-items: center;
@@ -2032,6 +2043,254 @@ html.tl-gated .tl-agegate { display: grid; }
   font-size: .88rem;
   font-weight: 600;
   color: var(--color-ink-strong);
+}
+
+/* ==========================================================================
+   My account
+   ========================================================================== */
+
+/*
+ * page.php wraps the content in .tl-prose, whose 74ch measure is right for an
+ * article and far too narrow for a dashboard — it squeezed the two columns
+ * into half the container.
+ */
+.woocommerce-account .tl-prose { max-width: none; }
+
+.woocommerce-account .woocommerce {
+  display: grid;
+  gap: 1.5rem;
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .woocommerce-account .woocommerce { grid-template-columns: 260px minmax(0, 1fr); gap: 2.25rem; }
+  /* Pin both tracks: auto-placement put the nav in the wide column and left
+     the content in the 260px one. */
+  .woocommerce-account .tl-account-nav { grid-column: 1; grid-row: 1; }
+  .woocommerce-account .woocommerce-MyAccount-content { grid-column: 2; grid-row: 1; }
+}
+
+/* Login and register are a single centred column, not a sidebar layout. */
+.woocommerce-account.logged-out .woocommerce { display: block; }
+
+.tl-account-nav {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+@media (min-width: 900px) {
+  .tl-account-nav { position: sticky; top: 5.5rem; }
+}
+
+.tl-account-nav__user {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-line);
+  background: var(--color-panel);
+}
+.tl-account-nav__avatar {
+  flex: 0 0 auto;
+  display: grid; place-items: center;
+  width: 40px; height: 40px;
+  border-radius: 999px;
+  background: linear-gradient(145deg, var(--color-accent-glow), var(--color-accent-deep));
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 800;
+}
+.tl-account-nav__who { min-width: 0; }
+.tl-account-nav__who strong {
+  display: block;
+  font-size: .92rem;
+  color: var(--color-ink-strong);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.tl-account-nav__who em {
+  display: block;
+  font-style: normal;
+  font-size: .76rem;
+  color: var(--color-muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.tl-account-nav__list { list-style: none; margin: 0; padding: .4rem; }
+.tl-account-nav__list li { margin: 0; }
+.tl-account-nav__list a {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: .6rem .7rem;
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  font-size: .92rem;
+  font-weight: 500;
+  transition: background-color .14s ease, color .14s ease;
+}
+.tl-account-nav__list a:hover {
+  background: var(--color-panel);
+  color: var(--color-ink-strong);
+}
+.tl-account-nav__list .is-active a,
+.tl-account-nav__list a[aria-current="page"] {
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  color: var(--color-accent-ink);
+  font-weight: 600;
+}
+.tl-account-nav__icon {
+  flex: 0 0 auto;
+  display: grid; place-items: center;
+  width: 20px; height: 20px;
+  color: var(--color-muted);
+}
+.tl-account-nav__list a:hover .tl-account-nav__icon,
+.tl-account-nav__list .is-active .tl-account-nav__icon { color: currentColor; }
+.tl-account-nav__icon svg { width: 17px; height: 17px; }
+
+/* On a phone a stacked menu pushes the content off the first screen. */
+@media (max-width: 899px) {
+  .tl-account-nav__user { display: none; }
+  .tl-account-nav__list {
+    display: flex;
+    gap: .35rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    padding: .5rem;
+  }
+  .tl-account-nav__list::-webkit-scrollbar { display: none; }
+  .tl-account-nav__list li { flex: 0 0 auto; }
+  .tl-account-nav__list a { white-space: nowrap; }
+}
+
+.woocommerce-MyAccount-content { min-width: 0; }
+
+/* Dashboard */
+.tl-dash__head { margin-bottom: 1.5rem; }
+.tl-dash__hello { font-size: clamp(1.35rem, 1.1rem + 1vw, 1.8rem); margin: 0 0 .3rem; }
+.tl-dash__sub { color: var(--color-muted); margin: 0; }
+
+.tl-dash__last {
+  padding: 1.1rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  margin-bottom: 1.5rem;
+}
+.tl-dash__lasthead {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: .75rem;
+}
+.tl-dash__lasthead .tl-eyebrow { margin: 0; }
+.tl-dash__status {
+  padding: .2rem .6rem;
+  border-radius: 999px;
+  background: var(--color-panel);
+  color: var(--color-muted);
+  font-size: .74rem;
+  font-weight: 600;
+}
+.tl-dash__status--completed {
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  color: var(--color-success);
+}
+.tl-dash__status--processing,
+.tl-dash__status--on-hold {
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  color: var(--color-accent-ink);
+}
+.tl-dash__lastbody {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.tl-dash__lastbody > div:first-child { flex: 1; min-width: 0; }
+.tl-dash__lastbody strong {
+  display: block;
+  font-family: var(--font-mono);
+  color: var(--color-ink-strong);
+}
+.tl-dash__lastbody span { font-size: .82rem; color: var(--color-muted); }
+.tl-dash__lasttotal {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--color-ink-strong);
+}
+
+.tl-dash__cards {
+  display: grid;
+  gap: .8rem;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  margin-bottom: 1.5rem;
+}
+.tl-dash__card {
+  display: block;
+  padding: 1.1rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.tl-dash__card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+  box-shadow: var(--shadow-sm);
+}
+.tl-dash__cardicon {
+  display: grid; place-items: center;
+  width: 38px; height: 38px;
+  margin-bottom: .7rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  color: var(--color-accent);
+}
+.tl-dash__cardicon svg { width: 19px; height: 19px; }
+.tl-dash__card strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--color-ink-strong);
+  margin-bottom: .15rem;
+}
+.tl-dash__card em {
+  display: block;
+  font-style: normal;
+  font-size: .82rem;
+  color: var(--color-muted);
+}
+
+.tl-dash__logout { font-size: .85rem; color: var(--color-muted); margin: 0; }
+
+/* WooCommerce's own account tables and forms */
+.woocommerce-account .woocommerce-MyAccount-content table.shop_table {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  width: 100%;
+}
+.woocommerce-account .woocommerce-MyAccount-content table.shop_table th,
+.woocommerce-account .woocommerce-MyAccount-content table.shop_table td {
+  padding: .8rem 1rem;
+  border-bottom: 1px solid var(--color-line);
+  text-align: left;
+}
+.woocommerce-account .woocommerce-MyAccount-content table.shop_table thead th {
+  background: var(--color-panel);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.woocommerce-account .woocommerce-MyAccount-content table.shop_table tbody tr:last-child td {
+  border-bottom: 0;
 }
 
 /* ==========================================================================
