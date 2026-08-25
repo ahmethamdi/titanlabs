@@ -491,4 +491,121 @@
 
     syncSheet();
   }
+
+  /* ----------------------------------------------------------------
+   * Scroll reveal
+   *
+   * Sections rise into place as they enter the viewport, and counters in
+   * the hero and quality stats count up to their value. Both run once.
+   *
+   * The hiding styles live behind html.has-reveal, which is only set here —
+   * so if this script never runs, nothing is left invisible.
+   * ------------------------------------------------------------- */
+  (function () {
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (reduced.matches || !('IntersectionObserver' in window)) {
+      return;
+    }
+
+    // Sections worth announcing, plus the grids inside them.
+    var targets = document.querySelectorAll(
+      '.tl-section .tl-sectionhead, .tl-spotlight__inner, .tl-stack-promo, .tl-qa__stats'
+    );
+    var grids = document.querySelectorAll(
+      '.tl-grid, .tl-cat-grid, .tl-product-grid, .tl-reviews__list'
+    );
+
+    if (!targets.length && !grids.length) {
+      return;
+    }
+
+    root.classList.add('has-reveal');
+
+    Array.prototype.forEach.call(targets, function (el) {
+      el.setAttribute('data-reveal', '');
+    });
+
+    Array.prototype.forEach.call(grids, function (grid) {
+      grid.setAttribute('data-reveal-stagger', '');
+      Array.prototype.forEach.call(grid.children, function (child, i) {
+        // Cap the stagger so a long grid does not trail far behind the fold.
+        child.style.setProperty('--i', Math.min(i, 8));
+      });
+    });
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) {
+          return;
+        }
+        entry.target.classList.add('is-visible');
+        io.unobserve(entry.target);
+      });
+    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.08 });
+
+    Array.prototype.forEach.call(targets, function (el) { io.observe(el); });
+    Array.prototype.forEach.call(grids, function (el) { io.observe(el); });
+
+    /* Count the measured figures up rather than just printing them. Only
+       numeric values animate; "EU" and the like are left alone. */
+    var counters = document.querySelectorAll('.tl-hero__trust dt, .tl-qa__stats dt');
+
+    var countUp = function (el) {
+      var raw = el.textContent.trim();
+      var match = raw.match(/^([^\d-]*)(-?[\d.,]+)(.*)$/);
+      if (!match) {
+        return;
+      }
+      var prefix = match[1];
+      var suffix = match[3];
+      var numText = match[2];
+      var decimals = (numText.split(/[.,]/)[1] || '').length;
+      var usesComma = numText.indexOf(',') > -1 && decimals > 0;
+      var target = parseFloat(numText.replace(/,/g, usesComma ? '.' : ''));
+
+      if (isNaN(target)) {
+        return;
+      }
+
+      var start = null;
+      var dur = 900;
+
+      var step = function (now) {
+        if (start === null) {
+          start = now;
+        }
+        var t = Math.min((now - start) / dur, 1);
+        // Ease out so it decelerates onto the final figure.
+        var eased = 1 - Math.pow(1 - t, 3);
+        var value = (target * eased).toFixed(decimals);
+        if (usesComma) {
+          value = value.replace('.', ',');
+        }
+        el.textContent = prefix + value + suffix;
+        if (t < 1) {
+          requestAnimationFrame(step);
+        }
+      };
+
+      requestAnimationFrame(step);
+    };
+
+    if (counters.length) {
+      var counterIo = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) {
+            return;
+          }
+          countUp(entry.target);
+          counterIo.unobserve(entry.target);
+        });
+        // The hero figures straddle the fold on a laptop screen, so any
+        // meaningful threshold or negative margin would keep them from ever
+        // counting. A sliver in view is enough.
+      }, { threshold: 0.01 });
+
+      Array.prototype.forEach.call(counters, function (el) { counterIo.observe(el); });
+    }
+  }());
+
 })();
