@@ -197,6 +197,27 @@ add_action( 'woocommerce_after_main_content', 'titan_wc_wrapper_end', 10 );
 // Sidebar off by default — the design uses full-width grids.
 remove_action( 'woocommerce_sidebar', 'woocommerce_get_sidebar', 10 );
 
+// The page hero already prints a breadcrumb; WooCommerce's own hook would
+// repeat it directly above the grid.
+remove_action( 'woocommerce_before_main_content', 'woocommerce_breadcrumb', 20 );
+
+// The hero states the catalogue size, so "Showing 1-24 of 71 results" is
+// pagination mechanics leaking into the page. The pager already says it.
+remove_action( 'woocommerce_before_shop_loop', 'woocommerce_result_count', 20 );
+
+/**
+ * Turns off the gallery zoom overlay.
+ *
+ * Zoom absolutely positions a full-resolution copy of the image over the
+ * frame at its natural size, which with object-fit: contain spills outside
+ * the container and reads as a cropped, broken photo. Lightbox and the
+ * thumbnail slider still work.
+ */
+function titan_gallery_support() {
+	remove_theme_support( 'wc-product-gallery-zoom' );
+}
+add_action( 'after_setup_theme', 'titan_gallery_support', 99 );
+
 /**
  * Products per row / per page.
  */
@@ -495,7 +516,100 @@ function titan_loop_size() {
 add_action( 'woocommerce_after_shop_loop_item_title', 'titan_loop_size', 8 );
 
 /**
- * Purity / COA badges on the single product page.
+ * Reads a product's lab data, keeping only the fields that were filled in.
+ *
+ * Not every product has been through the lab yet, so callers must render
+ * nothing rather than showing blank rows — an empty lab value reads worse
+ * than no lab section at all.
+ *
+ * @param int $product_id Product ID.
+ * @return array<string, string> Populated meta values, unprefixed keys.
+ */
+function titan_lab_data( $product_id ) {
+	$out = array();
+
+	foreach ( array_keys( titan_lab_fields() ) as $key ) {
+		$value = trim( (string) get_post_meta( $product_id, $key, true ) );
+
+		/*
+		 * Consumables such as bacteriostatic water store "—" to mean "not
+		 * applicable". Treat those as absent so no panel claims a result that
+		 * was never measured.
+		 */
+		if ( '' === $value || '' === trim( $value, "—-–  \t" ) ) {
+			continue;
+		}
+
+		$out[ substr( $key, 7 ) ] = $value;
+	}
+
+	return $out;
+}
+
+/**
+ * Returns the assay rows for a product, pairing each result with the method
+ * used. Naming the method is what separates a lab report from a claim.
+ *
+ * @param array<string, string> $lab Lab data from titan_lab_data().
+ * @return array<int, array<string, string>>
+ */
+function titan_lab_assays( $lab ) {
+	$rows = array();
+
+	if ( ! empty( $lab['purity'] ) ) {
+		$rows[] = array(
+			'test'   => __( 'Purity', 'titan-labs' ),
+			'method' => 'RP-HPLC',
+			'result' => $lab['purity'],
+		);
+	}
+	if ( ! empty( $lab['heavy_metals'] ) ) {
+		$rows[] = array(
+			'test'   => __( 'Heavy metals', 'titan-labs' ),
+			'method' => 'ICP-MS',
+			'result' => $lab['heavy_metals'],
+		);
+	}
+	if ( ! empty( $lab['endotoxins'] ) ) {
+		$rows[] = array(
+			'test'   => __( 'Endotoxins', 'titan-labs' ),
+			'method' => 'LAL',
+			'result' => $lab['endotoxins'],
+		);
+	}
+	if ( ! empty( $lab['sterility'] ) ) {
+		$rows[] = array(
+			'test'   => __( 'Sterility', 'titan-labs' ),
+			'method' => 'USP <71>',
+			'result' => $lab['sterility'],
+		);
+	}
+	if ( ! empty( $lab['net_content'] ) ) {
+		$rows[] = array(
+			'test'   => __( 'Net content', 'titan-labs' ),
+			'method' => __( 'Gravimetric', 'titan-labs' ),
+			'result' => $lab['net_content'],
+		);
+	}
+
+	return $rows;
+}
+
+/**
+ * True when a result string reads as a passing assay.
+ *
+ * @param string $result Result value.
+ * @return bool
+ */
+function titan_lab_is_pass( $result ) {
+	return (bool) preg_match( '/^\s*pass\b/i', $result );
+}
+
+/**
+ * Verification panel on the single product page.
+ *
+ * Sits above the price: the measured batch data is the reason someone buys
+ * here rather than from an anonymous reseller, so it leads.
  */
 function titan_single_lab_badges() {
 	global $product;
@@ -503,42 +617,419 @@ function titan_single_lab_badges() {
 		return;
 	}
 
-	$purity = get_post_meta( $product->get_id(), '_titan_purity', true );
-	$coa    = get_post_meta( $product->get_id(), '_titan_coa_url', true );
+	$lab = titan_lab_data( $product->get_id() );
 
-	if ( ! $purity && ! $coa ) {
+	if ( ! $lab ) {
 		return;
 	}
 
-	echo '<div class="tl-flex tl-gap tl-items-center" style="flex-wrap:wrap;margin:.75rem 0 1.25rem">';
-	if ( $purity ) {
-		printf(
-			'<span class="tl-badge">%s %s</span>',
-			esc_html__( 'Tested purity', 'titan-labs' ),
-			esc_html( $purity )
-		);
+	$headline = array();
+	if ( ! empty( $lab['purity'] ) ) {
+		$headline[] = array( __( 'Tested purity', 'titan-labs' ), $lab['purity'] );
 	}
-	if ( $coa ) {
-		printf(
-			'<a class="tl-badge tl-badge--outline" href="%s" target="_blank" rel="noopener">%s</a>',
-			esc_url( $coa ),
-			esc_html__( 'View Certificate of Analysis', 'titan-labs' )
-		);
+	if ( ! empty( $lab['batch'] ) ) {
+		$headline[] = array( __( 'Batch', 'titan-labs' ), $lab['batch'] );
 	}
-	echo '</div>';
+	if ( ! empty( $lab['tested_date'] ) ) {
+		$headline[] = array( __( 'Tested', 'titan-labs' ), $lab['tested_date'] );
+	}
+
+	if ( ! $headline ) {
+		return;
+	}
+
+	$assays  = titan_lab_assays( $lab );
+	$results = wp_list_pluck( $assays, 'result' );
+	$all_ok  = $results && count( array_filter( $results, 'titan_lab_is_pass' ) )
+		=== count( array_filter( $results, function ( $r ) {
+			return preg_match( '/^\s*(pass|fail)\b/i', $r );
+		} ) );
+	?>
+	<div class="tl-verified">
+		<div class="tl-verified__head">
+			<span class="tl-verified__icon" aria-hidden="true">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+					stroke-linecap="round" stroke-linejoin="round">
+					<path d="M12 3 4 6v6c0 4.4 3.4 8.3 8 9 4.6-.7 8-4.6 8-9V6l-8-3Z"/>
+					<path d="m9 12 2 2 4-4"/>
+				</svg>
+			</span>
+			<strong><?php esc_html_e( 'Third-party verified', 'titan-labs' ); ?></strong>
+			<?php if ( $all_ok ) : ?>
+				<span class="tl-verified__pass">
+					<?php esc_html_e( 'All assays pass', 'titan-labs' ); ?>
+				</span>
+			<?php endif; ?>
+		</div>
+
+		<dl class="tl-verified__specs">
+			<?php foreach ( $headline as $pair ) : ?>
+				<div>
+					<dt><?php echo esc_html( $pair[0] ); ?></dt>
+					<dd><?php echo esc_html( $pair[1] ); ?></dd>
+				</div>
+			<?php endforeach; ?>
+		</dl>
+
+		<?php if ( ! empty( $lab['coa_url'] ) ) : ?>
+			<a class="tl-btn tl-btn--ghost tl-btn--sm tl-verified__coa"
+				href="<?php echo esc_url( $lab['coa_url'] ); ?>" target="_blank" rel="noopener">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+					stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+					<path d="M14 2v6h6M12 18v-6M9 15l3 3 3-3"/>
+				</svg>
+				<?php esc_html_e( 'Certificate of Analysis', 'titan-labs' ); ?>
+			</a>
+		<?php endif; ?>
+	</div>
+	<?php
 }
-add_action( 'woocommerce_single_product_summary', 'titan_single_lab_badges', 25 );
+add_action( 'woocommerce_single_product_summary', 'titan_single_lab_badges', 6 );
+
+/**
+ * Full assay table below the product summary.
+ */
+function titan_single_lab_report() {
+	global $product;
+	if ( ! $product ) {
+		return;
+	}
+
+	$lab    = titan_lab_data( $product->get_id() );
+	$assays = $lab ? titan_lab_assays( $lab ) : array();
+
+	if ( ! $assays ) {
+		return;
+	}
+	?>
+	<section class="tl-labreport">
+		<div class="tl-sectionhead">
+			<div>
+				<p class="tl-eyebrow"><?php esc_html_e( 'Batch analysis', 'titan-labs' ); ?></p>
+				<h2 class="tl-mb-0"><?php esc_html_e( 'Lab Report', 'titan-labs' ); ?></h2>
+			</div>
+		</div>
+
+		<div class="tl-labreport__grid">
+			<div class="tl-labreport__tablewrap">
+				<table class="tl-labreport__table">
+					<thead>
+						<tr>
+							<th scope="col"><?php esc_html_e( 'Test', 'titan-labs' ); ?></th>
+							<th scope="col"><?php esc_html_e( 'Method', 'titan-labs' ); ?></th>
+							<th scope="col"><?php esc_html_e( 'Result', 'titan-labs' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( $assays as $row ) : ?>
+							<tr>
+								<th scope="row"><?php echo esc_html( $row['test'] ); ?></th>
+								<td class="tl-labreport__method"><?php echo esc_html( $row['method'] ); ?></td>
+								<td class="tl-labreport__result">
+									<?php if ( titan_lab_is_pass( $row['result'] ) ) : ?>
+										<span class="tl-labreport__pass">
+											<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+												stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"
+												aria-hidden="true"><path d="m5 13 4 4L19 7"/></svg>
+											<?php echo esc_html( $row['result'] ); ?>
+										</span>
+									<?php else : ?>
+										<span class="tl-mono"><?php echo esc_html( $row['result'] ); ?></span>
+									<?php endif; ?>
+								</td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+			</div>
+
+			<aside class="tl-labreport__side">
+				<?php if ( ! empty( $lab['batch'] ) ) : ?>
+					<p class="tl-labreport__batch">
+						<span><?php esc_html_e( 'Batch', 'titan-labs' ); ?></span>
+						<strong><?php echo esc_html( $lab['batch'] ); ?></strong>
+					</p>
+				<?php endif; ?>
+				<?php if ( ! empty( $lab['tested_date'] ) ) : ?>
+					<p class="tl-labreport__batch">
+						<span><?php esc_html_e( 'Tested', 'titan-labs' ); ?></span>
+						<strong><?php echo esc_html( $lab['tested_date'] ); ?></strong>
+					</p>
+				<?php endif; ?>
+
+				<?php if ( ! empty( $lab['coa_url'] ) ) : ?>
+					<a class="tl-btn tl-btn--primary tl-btn--sm tl-btn--block"
+						href="<?php echo esc_url( $lab['coa_url'] ); ?>" target="_blank" rel="noopener">
+						<?php esc_html_e( 'Download COA (PDF)', 'titan-labs' ); ?>
+					</a>
+				<?php endif; ?>
+
+				<?php if ( ! empty( $lab['verify_url'] ) ) : ?>
+					<a class="tl-labreport__verify" href="<?php echo esc_url( $lab['verify_url'] ); ?>"
+						target="_blank" rel="noopener">
+						<?php esc_html_e( 'Verify this batch independently', 'titan-labs' ); ?> &rarr;
+					</a>
+				<?php endif; ?>
+
+				<p class="tl-labreport__note">
+					<?php esc_html_e( 'Every batch is screened by an accredited third-party laboratory before release. Certificates are published for each lot.', 'titan-labs' ); ?>
+				</p>
+			</aside>
+		</div>
+	</section>
+	<?php
+}
+add_action( 'woocommerce_after_single_product_summary', 'titan_single_lab_report', 12 );
+
+/**
+ * Reassurance rows in the buy column.
+ */
+function titan_single_trust_rows() {
+	$rows = array(
+		array(
+			__( 'Third-party tested', 'titan-labs' ),
+			__( 'HPLC and mass-spec on every batch', 'titan-labs' ),
+			'M12 3 4 6v6c0 4.4 3.4 8.3 8 9 4.6-.7 8-4.6 8-9V6l-8-3Z',
+		),
+		array(
+			__( 'Tracked EU delivery', 'titan-labs' ),
+			__( 'DHL, dispatched from Europe', 'titan-labs' ),
+			'M1 3h15v13H1zM16 8h4l3 3v5h-7z',
+		),
+		array(
+			__( 'Discreet packaging', 'titan-labs' ),
+			__( 'Plain outer, no product markings', 'titan-labs' ),
+			'M21 8v13H3V8M1 3h22v5H1zM10 12h4',
+		),
+	);
+	?>
+	<ul class="tl-buytrust">
+		<?php foreach ( $rows as $row ) : ?>
+			<li>
+				<span class="tl-buytrust__icon" aria-hidden="true">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+						stroke-linecap="round" stroke-linejoin="round">
+						<path d="<?php echo esc_attr( $row[2] ); ?>"/>
+					</svg>
+				</span>
+				<span>
+					<strong><?php echo esc_html( $row[0] ); ?></strong>
+					<em><?php echo esc_html( $row[1] ); ?></em>
+				</span>
+			</li>
+		<?php endforeach; ?>
+	</ul>
+	<?php
+}
+// After the meta line (priority 40), so SKU and categories don't land in the
+// middle of the reassurance rows.
+add_action( 'woocommerce_single_product_summary', 'titan_single_trust_rows', 41 );
 
 /**
  * Research-use-only notice on the single product page.
  */
 function titan_single_rou_notice() {
 	printf(
-		'<p class="tl-small tl-muted" style="margin-top:1rem">%s</p>',
+		'<p class="tl-rou">%s</p>',
 		esc_html__( 'For laboratory research use only. Not for human consumption.', 'titan-labs' )
 	);
 }
 add_action( 'woocommerce_single_product_summary', 'titan_single_rou_notice', 45 );
+
+/**
+ * Drops the default product tabs. They introduce a second tab style and
+ * advertise "Reviews (0)" on a page where trust is the whole job; the
+ * description and lab report are laid out as sections instead.
+ */
+function titan_remove_product_tabs() {
+	remove_action( 'woocommerce_after_single_product_summary', 'woocommerce_output_product_data_tabs', 10 );
+}
+add_action( 'init', 'titan_remove_product_tabs' );
+
+/**
+ * Splits the product copy into prose, research areas and spec pairs.
+ *
+ * The catalogue stores structured data inside the sentence — "Research areas:
+ * … Format: Lyophilized powder Specs: Purity: >=99% | Form: … | Storage: -20C"
+ * — which renders as an unscannable wall. Parsing it here means existing copy
+ * restructures itself rather than needing re-entry across 71 products.
+ *
+ * @param string $text Raw description.
+ * @return array{intro:string, areas:array<int,string>, specs:array<int,array<int,string>>}
+ */
+function titan_parse_description( $text ) {
+	$out = array(
+		'intro' => '',
+		'areas' => array(),
+		'specs' => array(),
+	);
+
+	$text = trim( wp_strip_all_tags( $text ) );
+	if ( '' === $text ) {
+		return $out;
+	}
+
+	// Slice at the labels, keeping whatever precedes the first one as prose.
+	// The colon is inconsistent in the catalogue copy, so treat it as optional.
+	$parts = preg_split(
+		'/\b(Research areas|Available sizes|Format|Specs|Storage)\s*:?\s+/i',
+		$text,
+		-1,
+		PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY
+	);
+
+	$out['intro'] = trim( (string) array_shift( $parts ) );
+
+	for ( $i = 0; $i + 1 < count( $parts ); $i += 2 ) {
+		$label = strtolower( trim( $parts[ $i ] ) );
+		$value = trim( $parts[ $i + 1 ] );
+
+		if ( 'available sizes' === $label ) {
+			$sizes = trim( preg_replace( '/\s*\b(For (research|laboratory)|Not for human)\b.*$/is', '', $value ), " \t.;," );
+			if ( '' !== $sizes ) {
+				$out['specs'][] = array( __( 'Available sizes', 'titan-labs' ), $sizes );
+			}
+			continue;
+		}
+
+		if ( 'research areas' === $label ) {
+			foreach ( preg_split( '/,(?![^(]*\))/', $value ) as $area ) {
+				$area = trim( $area, " \t.;" );
+				// Trailing fragments such as "and metabolic regulation models".
+				$area = preg_replace( '/^and\s+/i', '', $area );
+				if ( '' !== $area && strlen( $area ) < 70 ) {
+					$out['areas'][] = $area;
+				}
+			}
+			continue;
+		}
+
+		// "Purity: >=99% | Form: Lyophilized Powder | Storage: -20C"
+		foreach ( explode( '|', $value ) as $pair ) {
+			if ( ! str_contains( $pair, ':' ) ) {
+				if ( 'specs' !== $label && '' !== trim( $pair ) ) {
+					// Same trailing-disclaimer trim as the labelled branch below.
+					$bare = preg_replace( '/\s*\b(For (research|laboratory)|Not for human)\b.*$/is', '', $pair );
+					$bare = trim( (string) $bare, " \t.;," );
+					if ( '' !== $bare ) {
+						$out['specs'][] = array( ucfirst( $label ), $bare );
+					}
+				}
+				continue;
+			}
+			list( $k, $v ) = array_map( 'trim', explode( ':', $pair, 2 ) );
+
+			/*
+			 * The last spec runs straight into the site-wide disclaimer, which
+			 * is already shown under the buy button. Cut at the first sentence
+			 * boundary so a spec value stays a value.
+			 */
+			$v = preg_replace( '/\s*\b(For (research|laboratory)|Not for human)\b.*$/is', '', $v );
+			$v = trim( (string) $v, " \t.;," );
+
+			if ( '' !== $k && '' !== $v ) {
+				$out['specs'][] = array( $k, $v );
+			}
+		}
+	}
+
+	$out['areas'] = array_slice( array_unique( $out['areas'] ), 0, 8 );
+
+	/*
+	 * "Format: Lyophilized powder" and "Form: Lyophilized Powder" are the same
+	 * fact written twice, and the spec-sheet purity floor duplicates the
+	 * measured value shown in the verified panel. Keep one of each.
+	 */
+	$seen  = array();
+	$specs = array();
+	foreach ( $out['specs'] as $pair ) {
+		$key = strtolower( preg_replace( '/^format$/i', 'form', $pair[0] ) );
+		$sig = $key . '|' . strtolower( $pair[1] );
+
+		if ( isset( $seen[ $key ] ) || isset( $seen[ $sig ] ) ) {
+			continue;
+		}
+
+		$seen[ $key ] = true;
+		$seen[ $sig ] = true;
+		$specs[]      = $pair;
+	}
+	$out['specs'] = $specs;
+
+	return $out;
+}
+
+/**
+ * Description as its own section, in place of the removed tabs.
+ */
+function titan_single_description() {
+	global $post;
+
+	if ( ! $post || '' === trim( (string) $post->post_content ) ) {
+		return;
+	}
+
+	$parsed = titan_parse_description( $post->post_content );
+
+	// Nothing to restructure — show the copy as written.
+	if ( ! $parsed['areas'] && ! $parsed['specs'] ) {
+		?>
+		<section class="tl-pdpsection">
+			<div class="tl-sectionhead">
+				<div>
+					<p class="tl-eyebrow"><?php esc_html_e( 'About this peptide', 'titan-labs' ); ?></p>
+					<h2 class="tl-mb-0"><?php the_title(); ?></h2>
+				</div>
+			</div>
+			<div class="tl-prose"><?php the_content(); ?></div>
+		</section>
+		<?php
+		return;
+	}
+	?>
+	<section class="tl-pdpsection">
+		<div class="tl-sectionhead">
+			<div>
+				<p class="tl-eyebrow"><?php esc_html_e( 'About this peptide', 'titan-labs' ); ?></p>
+				<h2 class="tl-mb-0"><?php the_title(); ?></h2>
+			</div>
+		</div>
+
+		<div class="tl-about">
+			<div class="tl-about__main">
+				<?php if ( $parsed['intro'] ) : ?>
+					<p class="tl-lede"><?php echo esc_html( $parsed['intro'] ); ?></p>
+				<?php endif; ?>
+
+				<?php if ( $parsed['areas'] ) : ?>
+					<h3 class="tl-about__subhead"><?php esc_html_e( 'Research areas', 'titan-labs' ); ?></h3>
+					<ul class="tl-about__areas">
+						<?php foreach ( $parsed['areas'] as $area ) : ?>
+							<li><?php echo esc_html( ucfirst( $area ) ); ?></li>
+						<?php endforeach; ?>
+					</ul>
+				<?php endif; ?>
+			</div>
+
+			<?php if ( $parsed['specs'] ) : ?>
+				<aside class="tl-about__specs">
+					<h3 class="tl-about__subhead"><?php esc_html_e( 'Specifications', 'titan-labs' ); ?></h3>
+					<dl>
+						<?php foreach ( $parsed['specs'] as $pair ) : ?>
+							<div>
+								<dt><?php echo esc_html( $pair[0] ); ?></dt>
+								<dd><?php echo esc_html( $pair[1] ); ?></dd>
+							</div>
+						<?php endforeach; ?>
+					</dl>
+				</aside>
+			<?php endif; ?>
+		</div>
+	</section>
+	<?php
+}
+add_action( 'woocommerce_after_single_product_summary', 'titan_single_description', 10 );
 
 /* -------------------------------------------------------------------------
  * Helpers

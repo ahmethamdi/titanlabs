@@ -246,10 +246,90 @@ class Titan_Hero_Widget extends Titan_Widget_Base {
 					<?php endif; ?>
 				</div>
 
-				<div class="tl-hero__visual">
-					<?php if ( ! empty( $s['image']['url'] ) ) : ?>
-						<img src="<?php echo esc_url( $s['image']['url'] ); ?>"
-							alt="<?php echo esc_attr( Utils::get_image_alt( $s['image'] ) ); ?>">
+				<?php
+				/*
+				 * With no image set the hero showed a bare "TL" monogram — the
+				 * most valuable area on the site rendering as a placeholder.
+				 * Fall back to a real product shot, which the catalogue always
+				 * has, and label it with the lab data that justifies the claim
+				 * in the headline.
+				 */
+				$hero_img  = ! empty( $s['image']['url'] ) ? $s['image']['url'] : '';
+				$hero_alt  = ! empty( $s['image']['url'] ) ? Utils::get_image_alt( $s['image'] ) : '';
+				$hero_prod = null;
+
+				if ( ! $hero_img && function_exists( 'wc_get_product' ) ) {
+					/*
+					 * Only part of the catalogue has been through the lab, and the
+					 * chips are the whole point of showing a product here — so
+					 * require the purity meta rather than taking the most popular
+					 * product and hoping it has one. WP_Query, not
+					 * wc_get_products(), because the latter silently drops
+					 * meta_query and would hand back an unlabelled product.
+					 */
+					$hero_q = new WP_Query( array(
+						'post_type'           => 'product',
+						'post_status'         => 'publish',
+						'posts_per_page'      => 1,
+						'meta_key'            => 'total_sales',
+						'orderby'             => 'meta_value_num',
+						'order'               => 'DESC',
+						'ignore_sticky_posts' => true,
+						'no_found_rows'       => true,
+						'meta_query'          => array(
+							array(
+								'key'     => '_titan_purity',
+								'value'   => '',
+								'compare' => '!=',
+							),
+						),
+					) );
+
+					if ( ! empty( $hero_q->posts ) ) {
+						$hero_prod = wc_get_product( $hero_q->posts[0] );
+					} else {
+						$fallback = wc_get_products( array(
+							'limit'   => 1,
+							'status'  => 'publish',
+							'orderby' => 'popularity',
+						) );
+						$hero_prod = $fallback ? $fallback[0] : null;
+					}
+
+					if ( $hero_prod ) {
+						$hero_img = wp_get_attachment_image_url( $hero_prod->get_image_id(), 'large' );
+						$hero_alt = $hero_prod->get_name();
+					}
+				}
+				?>
+				<div class="tl-hero__visual<?php echo $hero_prod ? ' tl-hero__visual--product' : ''; ?>">
+					<?php if ( $hero_img ) : ?>
+						<img src="<?php echo esc_url( $hero_img ); ?>"
+							alt="<?php echo esc_attr( $hero_alt ); ?>">
+
+						<?php
+						if ( $hero_prod ) :
+							$hero_lab = function_exists( 'titan_lab_data' )
+								? titan_lab_data( $hero_prod->get_id() )
+								: array();
+							?>
+							<?php if ( ! empty( $hero_lab['purity'] ) ) : ?>
+								<div class="tl-hero__labchip">
+									<span class="tl-hero__labchip-dot" aria-hidden="true"></span>
+									<span>
+										<strong><?php echo esc_html( $hero_lab['purity'] ); ?></strong>
+										<em><?php esc_html_e( 'Tested purity', 'titan-labs' ); ?></em>
+									</span>
+								</div>
+							<?php endif; ?>
+							<?php if ( ! empty( $hero_lab['batch'] ) ) : ?>
+								<div class="tl-hero__batchchip">
+									<?php esc_html_e( 'Batch', 'titan-labs' ); ?>
+									<strong><?php echo esc_html( $hero_lab['batch'] ); ?></strong>
+								</div>
+							<?php endif; ?>
+						<?php endif; ?>
+
 					<?php else : ?>
 						<div class="tl-text-center" style="padding:2rem">
 							<span class="tl-logo__mark" aria-hidden="true"
