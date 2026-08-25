@@ -283,12 +283,25 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
 
 .tl-header {
   position: sticky;
-  top: 0;
+  top: var(--admin-bar-h, 0px);
   z-index: 100;
   background: var(--nv-glass);
   backdrop-filter: saturate(180%) blur(14px);
   -webkit-backdrop-filter: saturate(180%) blur(14px);
   border-bottom: 1px solid var(--color-line);
+}
+
+/*
+ * The WordPress admin bar is fixed over the top of the viewport, so a header
+ * stuck to top:0 slides underneath it and loses its first 32px. Only logged-in
+ * users see the bar, hence the offset hangs off .admin-bar rather than being
+ * baked into the header. Below 783px WordPress makes the bar 46px tall and
+ * scrolls it away with the page, so the header goes back to top:0 there.
+ */
+body.admin-bar { --admin-bar-h: 32px; }
+
+@media screen and (max-width: 782px) {
+  body.admin-bar { --admin-bar-h: 0px; }
 }
 
 .tl-header__bar {
