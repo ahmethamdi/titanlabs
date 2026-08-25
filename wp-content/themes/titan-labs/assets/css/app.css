@@ -313,25 +313,24 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
   .tl-header__bar > .tl-header__actions { justify-self: end; }
 }
 
-/* Condensed on scroll — set by the scroll handler in app.js. */
-.tl-header.is-condensed .tl-header__bar { min-height: 58px; }
-.tl-header.is-condensed .tl-logo { font-size: 1rem; }
-.tl-header.is-condensed .tl-logo img,
-.tl-header.is-condensed .tl-logo .custom-logo { max-height: 38px; max-width: 150px; }
-.tl-header.is-condensed .tl-logo__mark { width: 28px; height: 28px; font-size: .82rem; }
+/* Condensed on scroll — set by the scroll handler in app.js.
+ *
+ * Only the padding around the bar tightens. The logo keeps its resting size:
+ * shrinking it as well made the scrolled header read as a different, smaller
+ * site, and the wide lockup became unreadable at 38px. */
+.tl-header.is-condensed .tl-header__bar { min-height: 64px; }
 .tl-header.is-condensed { box-shadow: 0 1px 12px rgba(11, 18, 32, .07); }
 
-.tl-logo,
-.tl-logo img,
-.tl-logo__mark {
-  transition: font-size .22s ease, max-height .22s ease, width .22s ease, height .22s ease;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .tl-header__bar, .tl-logo, .tl-logo img, .tl-logo__mark { transition: none; }
+  .tl-header__bar { transition: none; }
 }
 
+/* The logo is a flex item in the bar. Without this it is allowed to shrink
+   past its contents, and on narrow screens the nav and action icons squeeze
+   the custom logo to zero width — max-width caps a size, it never floors one. */
 .tl-logo {
+  flex: 0 0 auto;
+  min-width: 0;
   display: inline-flex;
   align-items: center;
   gap: .6rem;
@@ -350,15 +349,27 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
    The uploaded mark is a wide lockup (1000x353): capping it by height alone
    left the wordmark too small to read, so it is bounded on width as well and
    allowed more height. */
+/* The height is set outright rather than left to `auto`. As a flex item with
+   no definite basis the image resolved to zero width on narrow screens, so the
+   logo vanished; `object-fit: contain` keeps the lockup's aspect ratio inside
+   the box. */
 .tl-logo img,
 .tl-logo .custom-logo {
-  max-height: 52px;
-  max-width: 190px;
+  height: 52px;
   width: auto;
-  height: auto;
+  max-width: 190px;
+  flex: 0 0 auto;
   display: block;
   object-fit: contain;
+  object-position: left center;
 }
+/* Phones: the burger and cart sit close to the logo, so the lockup gets a
+   smaller ceiling rather than being allowed to crowd them. */
+@media (max-width: 600px) {
+  .tl-logo img,
+  .tl-logo .custom-logo { height: 40px; max-width: 148px; }
+}
+
 .tl-logo--custom { line-height: 0; }
 .tl-logo--custom .custom-logo-link { display: inline-flex; align-items: center; }
 .tl-logo__mark {
