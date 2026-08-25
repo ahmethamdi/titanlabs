@@ -340,4 +340,149 @@
       window.location.href = 'https://www.google.com/';
     }
   });
+
+  /* ----------------------------------------------------------------
+   * Shop filters
+   *
+   * Every option is a real link, so this works without JS and the URLs
+   * stay shareable and indexable. With JS the same URL is fetched and
+   * swapped in, and pushState keeps the back button honest.
+   * ------------------------------------------------------------- */
+  var shopMain = document.querySelector('[data-shop-main]');
+
+  if (shopMain && window.titanData && titanData.ajaxUrl) {
+    var sheet = document.querySelector('[data-filtersheet]');
+    var sheetBody = document.querySelector('[data-filtersheet-body]');
+    var pending = null;
+
+    function syncSheet() {
+      // The sheet shows the same controls as the sidebar; clone rather than
+      // render twice so they can never disagree.
+      var sidebar = document.querySelector('.tl-shop__sidebar .tl-filters');
+      if (sheetBody && sidebar) {
+        sheetBody.innerHTML = '';
+        sheetBody.appendChild(sidebar.cloneNode(true));
+      }
+    }
+
+    function setBadge(n) {
+      var badge = document.querySelector('[data-filter-badge]');
+      if (!badge) return;
+      badge.textContent = String(n);
+      badge.hidden = !n;
+    }
+
+    function loadFilters(url, push) {
+      if (pending) pending.abort();
+      pending = new AbortController();
+
+      shopMain.classList.add('is-loading');
+
+      var body = new URLSearchParams();
+      body.set('action', 'titan_filter');
+      body.set('nonce', titanData.nonce);
+      body.set('url', url);
+
+      fetch(titanData.ajaxUrl, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString(),
+        signal: pending.signal,
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          if (!res || !res.success) return;
+
+          shopMain.innerHTML = res.data.results;
+
+          var sidebar = document.querySelector('.tl-shop__sidebar');
+          if (sidebar) sidebar.innerHTML = res.data.filters;
+
+          setBadge(res.data.count);
+          syncSheet();
+
+          if (push) window.history.pushState({ titanFilter: url }, '', url);
+
+          var top = document.querySelector('.tl-shop');
+          if (top && top.getBoundingClientRect().top < 0) {
+            top.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        })
+        .catch(function (err) {
+          // An aborted request is a newer click, not a failure.
+          if (err && err.name === 'AbortError') return;
+          window.location.href = url;
+        })
+        .then(function () {
+          shopMain.classList.remove('is-loading');
+          pending = null;
+        });
+    }
+
+    document.addEventListener('click', function (e) {
+      var opt = e.target.closest('[data-filter-opt]');
+      if (opt && opt.getAttribute('href')) {
+        if (opt.getAttribute('aria-disabled') === 'true') {
+          e.preventDefault();
+          return;
+        }
+        e.preventDefault();
+        loadFilters(opt.getAttribute('href'), true);
+        return;
+      }
+
+      // Pagination inside the filtered grid.
+      var page = e.target.closest('.tl-shop__main .woocommerce-pagination a');
+      if (page && page.getAttribute('href')) {
+        e.preventDefault();
+        loadFilters(page.getAttribute('href'), true);
+        return;
+      }
+
+      if (e.target.closest('[data-filters-open]')) {
+        syncSheet();
+        if (sheet) {
+          sheet.classList.add('is-open');
+          document.body.style.overflow = 'hidden';
+        }
+        return;
+      }
+
+      if (e.target.closest('[data-filters-close]')) {
+        if (sheet) {
+          sheet.classList.remove('is-open');
+          document.body.style.overflow = '';
+        }
+      }
+    });
+
+    // Sorting posts through the same path.
+    document.addEventListener('change', function (e) {
+      var select = e.target.closest('.tl-shop__main .woocommerce-ordering select');
+      if (!select) return;
+      e.preventDefault();
+      var url = new URL(window.location.href);
+      url.searchParams.set('orderby', select.value);
+      url.searchParams.delete('paged');
+      loadFilters(url.toString(), true);
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && sheet && sheet.classList.contains('is-open')) {
+        sheet.classList.remove('is-open');
+        document.body.style.overflow = '';
+      }
+    });
+
+    window.addEventListener('popstate', function (e) {
+      if (e.state && e.state.titanFilter) {
+        loadFilters(e.state.titanFilter, false);
+      } else {
+        loadFilters(window.location.href, false);
+      }
+    });
+
+    syncSheet();
+  }
 })();

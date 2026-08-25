@@ -1158,4 +1158,5 @@ add_filter( 'body_class', 'titan_body_class' );
 
 require_once TITAN_DIR . '/inc/customizer.php';
 require_once TITAN_DIR . '/inc/nav-walker.php';
+require_once TITAN_DIR . '/inc/shop-filters.php';
 require_once TITAN_DIR . '/inc/elementor/loader.php';

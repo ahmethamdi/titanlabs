@@ -62,29 +62,57 @@ $total = (int) wc_get_loop_prop( 'total' );
 
 <?php
 do_action( 'woocommerce_before_main_content' );
+?>
 
-if ( woocommerce_product_loop() ) {
+<div class="tl-shop">
 
-	do_action( 'woocommerce_before_shop_loop' );
+	<aside class="tl-shop__sidebar">
+		<?php titan_render_filters(); ?>
+	</aside>
 
-	woocommerce_product_loop_start();
+	<div class="tl-shop__main" data-shop-main>
+		<?php titan_render_shop_results(); ?>
+	</div>
 
-	if ( wc_get_loop_prop( 'total' ) ) {
-		while ( have_posts() ) {
-			the_post();
-			do_action( 'woocommerce_shop_loop' );
-			wc_get_template_part( 'content', 'product' );
-		}
-	}
+	<button type="button" class="tl-shop__mobilebar" data-filters-open
+		aria-controls="tl-filtersheet" aria-expanded="false">
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+			stroke-linecap="round" aria-hidden="true">
+			<path d="M3 6h18M7 12h10M10 18h4"/>
+		</svg>
+		<?php esc_html_e( 'Filter', 'titan-labs' ); ?>
+		<span class="tl-shop__mobilecount" data-filter-badge<?php echo titan_active_filters() ? '' : ' hidden'; ?>>
+			<?php echo esc_html( (string) count( titan_active_filters(), COUNT_RECURSIVE ) - count( titan_active_filters() ) ); ?>
+		</span>
+	</button>
 
-	woocommerce_product_loop_end();
+</div>
 
-	do_action( 'woocommerce_after_shop_loop' );
+<div class="tl-filtersheet" id="tl-filtersheet" data-filtersheet>
+	<div class="tl-filtersheet__scrim" data-filters-close></div>
+	<div class="tl-filtersheet__panel" role="dialog" aria-modal="true"
+		aria-label="<?php esc_attr_e( 'Filters', 'titan-labs' ); ?>">
+		<div class="tl-filtersheet__head">
+			<strong><?php esc_html_e( 'Filter', 'titan-labs' ); ?></strong>
+			<button type="button" class="tl-iconbtn" data-filters-close
+				aria-label="<?php esc_attr_e( 'Close filters', 'titan-labs' ); ?>">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+					stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+			</button>
+		</div>
+		<div class="tl-filtersheet__body" data-filtersheet-body></div>
+		<div class="tl-filtersheet__foot">
+			<a class="tl-btn tl-btn--ghost tl-btn--sm" href="<?php echo esc_url( titan_filter_clear_url() ); ?>">
+				<?php esc_html_e( 'Clear all', 'titan-labs' ); ?>
+			</a>
+			<button type="button" class="tl-btn tl-btn--primary tl-btn--sm" data-filters-close>
+				<?php esc_html_e( 'Show results', 'titan-labs' ); ?>
+			</button>
+		</div>
+	</div>
+</div>
 
-} else {
-	do_action( 'woocommerce_no_products_found' );
-}
-
+<?php
 do_action( 'woocommerce_after_main_content' );
 
 get_footer( 'shop' );
