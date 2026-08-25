@@ -314,10 +314,10 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
 }
 
 /* Condensed on scroll — set by the scroll handler in app.js. */
-.tl-header.is-condensed .tl-header__bar { min-height: 56px; }
+.tl-header.is-condensed .tl-header__bar { min-height: 58px; }
 .tl-header.is-condensed .tl-logo { font-size: 1rem; }
 .tl-header.is-condensed .tl-logo img,
-.tl-header.is-condensed .tl-logo .custom-logo { max-height: 28px; }
+.tl-header.is-condensed .tl-logo .custom-logo { max-height: 38px; max-width: 150px; }
 .tl-header.is-condensed .tl-logo__mark { width: 28px; height: 28px; font-size: .82rem; }
 .tl-header.is-condensed { box-shadow: 0 1px 12px rgba(11, 18, 32, .07); }
 
@@ -345,13 +345,19 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
 }
 .tl-logo:hover { color: var(--color-ink-strong); }
 /* WordPress prints the custom logo with its own link and intrinsic width
-   attributes, so the size has to be pinned on the image itself. */
+   attributes, so the size has to be pinned on the image itself.
+
+   The uploaded mark is a wide lockup (1000x353): capping it by height alone
+   left the wordmark too small to read, so it is bounded on width as well and
+   allowed more height. */
 .tl-logo img,
 .tl-logo .custom-logo {
-  max-height: 40px;
+  max-height: 52px;
+  max-width: 190px;
   width: auto;
   height: auto;
   display: block;
+  object-fit: contain;
 }
 .tl-logo--custom { line-height: 0; }
 .tl-logo--custom .custom-logo-link { display: inline-flex; align-items: center; }
