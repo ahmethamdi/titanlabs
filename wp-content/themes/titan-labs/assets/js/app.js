@@ -8,21 +8,27 @@
   var root = document.documentElement;
 
   /* ----------------------------------------------------------------
-   * Dark / light mode
+   * Sticky header
+   *
+   * Condenses once the page scrolls: the logo shrinks and the bar loses
+   * height, so the nav keeps its place without taking a band off every
+   * screenful.
    * ------------------------------------------------------------- */
-  function setTheme(mode) {
-    root.classList.toggle('dark', mode === 'dark');
-    try { localStorage.setItem('titanTheme', mode); } catch (e) {}
-    document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
-      btn.setAttribute('aria-pressed', String(mode === 'dark'));
-    });
-  }
+  var header = document.querySelector('.tl-header');
 
-  document.addEventListener('click', function (e) {
-    var toggle = e.target.closest('[data-theme-toggle]');
-    if (!toggle) return;
-    setTheme(root.classList.contains('dark') ? 'light' : 'dark');
-  });
+  if (header) {
+    var condensed = false;
+
+    var onScroll = function () {
+      var should = window.scrollY > 40;
+      if (should === condensed) return;
+      condensed = should;
+      header.classList.toggle('is-condensed', should);
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
 
   /* ----------------------------------------------------------------
    * Mobile drawer

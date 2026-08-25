@@ -139,7 +139,11 @@ function titan_is_elementor_canvas() {
 }
 
 /**
- * Theme/age-gate boot script — runs before paint to avoid a flash.
+ * Age-gate boot script — runs before paint to avoid a flash.
+ *
+ * The store is light-only: a dark variant that follows the OS meant visitors
+ * saw one of two different-looking sites depending on a setting they had not
+ * chosen for this store, and the toggle spent a header slot on it.
  */
 function titan_boot_script() {
 	// Never gate the Elementor canvas — it would block editing.
@@ -148,9 +152,8 @@ function titan_boot_script() {
 	<script id="titan-boot">
 	(function () {
 		try {
-			var t = localStorage.getItem('titanTheme');
-			if (!t) { t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
-			if (t === 'dark') { document.documentElement.classList.add('dark'); }
+			// Clear the preference left by the old toggle.
+			localStorage.removeItem('titanTheme');
 			if (<?php echo $gate; ?> && !localStorage.getItem('titanAgeVerified')) {
 				document.documentElement.classList.add('tl-gated');
 			}

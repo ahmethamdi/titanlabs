@@ -45,13 +45,27 @@ defined( 'ABSPATH' ) || exit;
 
 		<div class="tl-header__actions">
 
-			<button type="button" class="tl-iconbtn" data-theme-toggle aria-pressed="false"
-				aria-label="<?php esc_attr_e( 'Toggle dark mode', 'titan-labs' ); ?>">
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-					stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-					<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-				</svg>
-			</button>
+			<?php if ( function_exists( 'wc_get_page_permalink' ) ) : ?>
+				<?php
+				$account_url = wc_get_page_permalink( 'myaccount' );
+				$logged_in   = is_user_logged_in();
+				?>
+				<a class="tl-iconbtn tl-account" href="<?php echo esc_url( $account_url ); ?>"
+					aria-label="<?php echo esc_attr(
+						$logged_in
+							? __( 'Your account', 'titan-labs' )
+							: __( 'Sign in', 'titan-labs' )
+					); ?>">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+						stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+						<circle cx="12" cy="7" r="4"/>
+					</svg>
+					<?php if ( $logged_in ) : ?>
+						<span class="tl-account__dot" aria-hidden="true"></span>
+					<?php endif; ?>
+				</a>
+			<?php endif; ?>
 
 			<?php if ( function_exists( 'wc_get_cart_url' ) ) : ?>
 				<a class="tl-iconbtn tl-cart" href="<?php echo esc_url( wc_get_cart_url() ); ?>"
