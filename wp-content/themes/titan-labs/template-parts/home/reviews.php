@@ -90,7 +90,7 @@ $recent  = array_slice( $comments, 0, 6 );
 
 		</div>
 
-		<div class="tl-grid tl-grid--3">
+		<div class="tl-grid tl-grid--3 tl-grid--scroll-mobile">
 			<?php foreach ( $recent as $comment ) : ?>
 				<?php $rating = (int) get_comment_meta( $comment->comment_ID, 'rating', true ); ?>
 				<article class="tl-review-card">

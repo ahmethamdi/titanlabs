@@ -55,7 +55,7 @@ usort(
 			</a>
 		</div>
 
-		<div class="tl-grid tl-grid--3">
+		<div class="tl-grid tl-grid--3 tl-grid--scroll-mobile">
 			<?php foreach ( $terms as $term ) : ?>
 				<?php
 				$products = wc_get_products( array(

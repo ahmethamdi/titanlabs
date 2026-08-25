@@ -204,7 +204,7 @@ class Titan_Reviews_Widget extends Titan_Widget_Base {
 
 		if ( 'yes' === ( $s['show_cards'] ?? 'yes' ) && $recent ) :
 			?>
-			<div class="tl-grid tl-grid--<?php echo esc_attr( $s['columns'] ?? '3' ); ?>">
+			<div class="tl-grid tl-grid--<?php echo esc_attr( $s['columns'] ?? '3' ); ?> tl-grid--scroll-mobile">
 				<?php foreach ( $recent as $comment ) : ?>
 					<?php $rating = (int) get_comment_meta( $comment->comment_ID, 'rating', true ); ?>
 					<article class="tl-review-card">

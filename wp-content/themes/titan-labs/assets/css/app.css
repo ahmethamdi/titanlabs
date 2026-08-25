@@ -132,6 +132,13 @@ h1 { font-size: clamp(2rem, 1.3rem + 3vw, 3.5rem); }
 h2 { font-size: clamp(1.6rem, 1.1rem + 2vw, 2.5rem); }
 h3 { font-size: clamp(1.2rem, 1rem + 1vw, 1.6rem); }
 
+/* Tight display leading suits the large desktop sizes; at mobile sizes the
+   same ratio reads cramped. */
+@media (max-width: 899px) {
+  h1, h2 { line-height: 1.22; letter-spacing: -.015em; text-wrap: balance; }
+  h3 { line-height: 1.3; }
+}
+
 p { margin: 0 0 1em; }
 
 a { color: var(--color-accent); text-decoration: none; transition: color .18s ease; }
@@ -158,6 +165,9 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
 }
 
 .tl-section { padding-block: clamp(2.5rem, 1.5rem + 4vw, 6rem); }
+/* Phones show one section at a time, so the desktop breathing room just turns
+   into scrolling. */
+@media (max-width: 899px) { .tl-section { padding-block: 2.75rem; } }
 .tl-section--panel { background: var(--color-panel); }
 
 .tl-eyebrow {
@@ -185,21 +195,25 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
 @media (max-width: 899px) {
   .tl-grid--scroll-mobile {
     grid-auto-flow: column;
-    grid-auto-columns: minmax(216px, 74vw);
+    /* Cards stop short of full width so the next one peeks in — that sliver is
+       the only affordance telling a user the row scrolls. */
+    grid-auto-columns: minmax(216px, 78%);
     grid-template-columns: none;
     overflow-x: auto;
     overscroll-behavior-x: contain;
-    scroll-snap-type: x mandatory;
+    scroll-snap-type: x proximity;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
+    scrollbar-width: none;
     /* Bleed to the viewport edges so cards scroll out of the container. */
     margin-inline: calc(var(--tl-gutter, 20px) * -1);
     padding-inline: var(--tl-gutter, 20px);
-    padding-bottom: .75rem;
+    padding-bottom: .5rem;
+    scroll-padding-inline-start: var(--tl-gutter, 20px);
   }
-  .tl-grid--scroll-mobile > * {
-    scroll-snap-align: start;
-  }
+  .tl-grid--scroll-mobile::-webkit-scrollbar { display: none; }
+  .tl-grid--scroll-mobile > * { scroll-snap-align: start; }
+  /* Review cards read better a touch narrower than product cards. */
+  .tl-grid--scroll-mobile > .tl-review-card { align-self: start; }
 }
 
 .screen-reader-text {
@@ -494,6 +508,9 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
   padding: 0;
   gap: 0;
 }
+/* The rule above out-specifies the UA's [hidden] default, which would leave
+   every collapsed sub-menu on screen. */
+.tl-drawer nav ul[hidden] { display: none; }
 .tl-drawer nav li { position: static; }
 .tl-drawer nav a,
 .tl-drawer nav .tl-nav__list a {
@@ -522,6 +539,42 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
 }
 .tl-drawer nav .sub-menu a { font-size: .9rem; color: var(--color-muted); }
 
+/* Accordion rows (built by buildDrawerAccordion) */
+.tl-drawer__row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  border-bottom: 1px solid var(--color-line);
+}
+.tl-drawer__row > a { flex: 1; border-bottom: 0 !important; }
+.tl-drawer__toggle {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 40px; height: 40px;
+  margin-inline-end: -.35rem;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: background-color .16s ease, color .16s ease;
+}
+.tl-drawer__toggle svg {
+  width: 18px; height: 18px;
+  transition: transform .2s ease;
+}
+.tl-drawer__toggle[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  color: var(--color-accent-ink);
+}
+.tl-drawer__toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+.tl-drawer nav .tl-has-sub.is-open > .sub-menu {
+  padding-block: .35rem;
+  border-bottom: 1px solid var(--color-line);
+}
+.tl-drawer nav .sub-menu a { padding-block: .55rem; }
+
 /* ==========================================================================
    Hero
    ========================================================================== */
@@ -545,6 +598,16 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
   .tl-hero__inner { grid-template-columns: 1.08fr .92fr; }
 }
 
+/* On phones the product shot has to lead — stacked text-first, the image sat
+   ~700px down where nobody sees what is being sold. Source order stays
+   text-first for desktop and for screen readers on the way in. */
+@media (max-width: 899px) {
+  .tl-hero__inner { gap: 1.75rem; }
+  .tl-hero__inner > .tl-hero__visual { order: -1; }
+  /* A 4:3 block eats the fold on a phone; go wider and shorter. */
+  .tl-hero__visual { aspect-ratio: 16 / 10; }
+}
+
 .tl-hero h1 { margin-bottom: .35em; }
 
 .tl-hero__sub {
@@ -552,6 +615,29 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
   color: var(--color-muted);
   max-width: 60ch;
   margin-bottom: 1.75rem;
+}
+
+/* Display line-height of 1.15 is tuned for the 56px desktop h1; at the 32px
+   mobile size it reads cramped, and a 60ch measure never applies on a 390px
+   screen anyway. */
+@media (max-width: 899px) {
+  .tl-hero h1 {
+    line-height: 1.22;
+    letter-spacing: -.015em;
+    text-wrap: balance;
+  }
+  .tl-hero__sub {
+    font-size: 1.02rem;
+    line-height: 1.6;
+    max-width: 42ch;
+    margin-bottom: 1.5rem;
+  }
+  .tl-hero__cta { gap: .6rem; margin-bottom: 1.5rem; }
+  /* Full-width buttons beat two cramped pills side by side. */
+  .tl-hero__cta .tl-btn { flex: 1 1 100%; justify-content: center; }
+  .tl-hero__trust { gap: 1rem 1.5rem; padding-top: 1.25rem; }
+  .tl-hero__trust > div { min-width: 0; flex: 1 1 calc(50% - .75rem); }
+  .tl-hero__trust dt { font-size: 1.1rem; }
 }
 
 .tl-hero__cta { display: flex; flex-wrap: wrap; gap: .75rem; margin-bottom: 2rem; }
@@ -810,6 +896,12 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
   align-items: center;
 }
 @media (min-width: 900px) { .tl-spotlight__inner { grid-template-columns: 1fr 1fr; } }
+/* Same as the hero: lead with the product, not with spec text. */
+@media (max-width: 899px) {
+  .tl-spotlight__inner > .tl-spotlight__media { order: -1; }
+  .tl-spotlight__media { aspect-ratio: 16 / 10; }
+  .tl-spotlight__specs { gap: 1rem 1.5rem; }
+}
 .tl-spotlight__specs {
   display: flex; flex-wrap: wrap; gap: 1.5rem;
   margin: 1.25rem 0;

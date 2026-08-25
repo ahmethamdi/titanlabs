@@ -29,6 +29,54 @@
    * ------------------------------------------------------------- */
   var drawer = document.querySelector('[data-drawer]');
 
+  /**
+   * Collapse the drawer's sub-menus behind a toggle. A 20+ item menu dumped
+   * open is unusable on a phone, so each parent gets a disclosure button and
+   * starts closed. Built from the rendered menu so it works for both the WP
+   * menu and titan_primary_fallback().
+   */
+  function buildDrawerAccordion() {
+    if (!drawer) return;
+    var parents = drawer.querySelectorAll('li > .sub-menu');
+
+    Array.prototype.forEach.call(parents, function (sub, i) {
+      var li = sub.parentNode;
+      var link = li.querySelector(':scope > a');
+      if (!link || li.querySelector(':scope > .tl-drawer__toggle')) return;
+
+      var id = 'tl-submenu-' + i;
+      sub.id = id;
+      sub.hidden = true;
+      li.classList.add('tl-has-sub');
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'tl-drawer__toggle';
+      btn.setAttribute('aria-expanded', 'false');
+      btn.setAttribute('aria-controls', id);
+      btn.setAttribute('aria-label', link.textContent.trim());
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
+        ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        '<path d="m6 9 6 6 6-6"/></svg>';
+
+      btn.addEventListener('click', function () {
+        var open = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', String(!open));
+        sub.hidden = open;
+        li.classList.toggle('is-open', !open);
+      });
+
+      // The toggle sits beside the link, so wrap them on one row.
+      var row = document.createElement('div');
+      row.className = 'tl-drawer__row';
+      li.insertBefore(row, link);
+      row.appendChild(link);
+      row.appendChild(btn);
+    });
+  }
+
+  buildDrawerAccordion();
+
   function closeDrawer() {
     if (!drawer) return;
     drawer.classList.remove('is-open');

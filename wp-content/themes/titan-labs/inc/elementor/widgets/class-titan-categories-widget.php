@@ -159,7 +159,7 @@ class Titan_Categories_Widget extends Titan_Widget_Base {
 			$s['link_label'] ?? ''
 		);
 
-		printf( '<div class="tl-grid tl-grid--%s">', esc_attr( $s['columns'] ?? '3' ) );
+		printf( '<div class="tl-grid tl-grid--%s tl-grid--scroll-mobile">', esc_attr( $s['columns'] ?? '3' ) );
 
 		foreach ( $terms as $term ) {
 			$products = $per_card > 0
