@@ -20,8 +20,17 @@ while ( have_posts() ) :
 		</div>
 	</div>
 
+	<?php
+	/*
+	 * .tl-prose caps the measure at 74ch, which is right for reading but wrong
+	 * for the cart and checkout: their two-column block layouts were being
+	 * squeezed into the left half of the page. Those get the full container.
+	 */
+	$titan_wide = function_exists( 'is_cart' ) && ( is_cart() || is_checkout() || is_account_page() );
+	?>
+
 	<main id="main" class="tl-container" style="padding-bottom:4rem">
-		<div class="tl-prose">
+		<div class="<?php echo $titan_wide ? 'tl-pagewide' : 'tl-prose'; ?>">
 			<?php
 			the_content();
 			wp_link_pages( array(

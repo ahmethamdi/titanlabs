@@ -2766,6 +2766,8 @@ html.tl-gated .tl-agegate { display: grid; }
    ========================================================================== */
 
 .tl-prose { max-width: 74ch; }
+/* Cart and checkout opt out of the reading measure — see page.php. */
+.tl-pagewide { max-width: none; }
 .tl-prose h2 { margin-top: 2rem; }
 .tl-prose h3 { margin-top: 1.5rem; }
 .tl-prose ul, .tl-prose ol { padding-inline-start: 1.25rem; }
@@ -3143,3 +3145,80 @@ html.tl-gated .tl-agegate { display: grid; }
   display: inline-flex; align-items: center; gap: .4rem;
   font-size: .8rem; color: var(--color-faint);
 }
+
+/* ==========================================================================
+   Checkout (WooCommerce Checkout block)
+   ==========================================================================
+   The checkout page is a Gutenberg block, so the PHP templates under
+   woocommerce/ never run and none of the theme's form styling reached it.
+   These rules dress the block's own markup. Class names below were read off
+   the rendered page — the block's DOM is not guessable. */
+
+/* Sit the order summary in a card matching the rest of the site. */
+.woocommerce-checkout .wp-block-woocommerce-checkout-order-summary-block {
+  background: #fff;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.35rem;
+}
+
+/*
+ * The summary printed each product's full description, turning the sidebar
+ * into a wall of text taller than the form beside it. Note the item's own
+ * __description wrapper holds the product NAME too, so only the metadata
+ * description is hidden here.
+ */
+.wc-block-components-product-metadata__description { display: none; }
+
+/* The line price was printed twice: once under the name, once on the right.
+   The visible duplicate is the inner __individual-price span, so hide that
+   and leave the screen-reader total in place. */
+.wc-block-components-order-summary-item__individual-prices,
+.wc-block-components-order-summary-item__individual-price { display: none; }
+
+.wc-block-components-product-name {
+  font-weight: 600;
+  color: var(--color-ink-strong);
+}
+
+/* Give the grand total the weight of a final figure. */
+.wc-block-components-totals-footer-item .wc-block-components-totals-item__value {
+  font-family: var(--font-display);
+  font-weight: 800;
+}
+
+/* Form fields — match the theme's inputs rather than the block defaults. */
+.wc-block-components-text-input input,
+.wc-blocks-components-select__select,
+.wc-block-components-textarea {
+  border-radius: var(--radius-sm);
+  border-color: var(--color-line);
+}
+.wc-block-components-text-input input:focus,
+.wc-blocks-components-select__select:focus {
+  border-color: var(--color-accent);
+  outline: 2px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
+  outline-offset: 1px;
+}
+
+/* Place Order rendered near-black; the site's primary action is blue. */
+.wc-block-components-checkout-place-order-button {
+  background: var(--color-accent);
+  border-radius: 999px;
+  font-weight: 700;
+  padding-inline: 2rem;
+}
+.wc-block-components-checkout-place-order-button:hover:not(:disabled) {
+  background: var(--color-accent-deep);
+}
+
+/* Step headings follow the display face used elsewhere. */
+.wc-block-components-checkout-step__title,
+.wc-block-components-checkout-order-summary__title-text {
+  font-family: var(--font-display);
+  color: var(--color-ink-strong);
+}
+
+/* No mobile re-ordering here: the block already collapses the summary to the
+   top of the form on phones. Giving the sidebar `order: 1` as well put a
+   second "Order summary" panel on the page. */
