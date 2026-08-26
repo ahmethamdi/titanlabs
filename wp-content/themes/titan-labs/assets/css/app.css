@@ -1167,7 +1167,20 @@ body.admin-bar { --admin-bar-h: 32px; }
   overflow: visible;
   aspect-ratio: auto;
 }
+/* The rings and the bottle share one grid cell so they stay concentric;
+   without that the bottle stacked below the halo. */
+.tl-hero__visual--cutout {
+  display: grid;
+  grid-template-areas: "stack";
+  place-items: center;
+}
+/* Only the rings and the bottle stack; the pills are positioned against the
+   box itself and must stay out of the grid flow. */
+.tl-hero__visual--cutout > img,
+.tl-hero__visual--cutout > .tl-hero__rings { grid-area: stack; }
 .tl-hero__visual--cutout img {
+  position: relative;
+  z-index: 1;
   width: auto;
   max-width: 100%;
   height: auto;
@@ -1176,6 +1189,106 @@ body.admin-bar { --admin-bar-h: 32px; }
   margin-inline: auto;
   /* Ground the floating bottle without drawing a box around it. */
   filter: drop-shadow(0 26px 34px rgba(11, 18, 32, .18));
+  animation: tl-hero-float 6s ease-in-out infinite;
+}
+
+/*
+ * Concentric rings behind the bottle. Drawn with repeating radial stops
+ * rather than stacked elements so the whole halo is one paint, and masked
+ * so it fades out instead of ending on a hard circle.
+ */
+.tl-hero__visual--cutout .tl-hero__rings {
+  width: min(115%, 560px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, var(--color-accent) 14%, transparent) 0 1px,
+      transparent 1px 58px
+    );
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 55%, transparent 76%);
+          mask-image: radial-gradient(circle at 50% 50%, #000 55%, transparent 76%);
+  opacity: .85;
+}
+
+/* Floating lab-data pills, positioned off opposite corners of the bottle. */
+.tl-hero__float {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .6rem .85rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+  border: 1px solid var(--color-line);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 10px 26px -10px rgba(11, 18, 32, .28);
+  white-space: nowrap;
+}
+.tl-hero__float strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: .92rem;
+  line-height: 1.15;
+  color: var(--color-ink-strong);
+}
+.tl-hero__float em {
+  display: block;
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: .64rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.tl-hero__float--purity {
+  top: 6%;
+  right: -2%;
+  animation: tl-hero-float 6s ease-in-out infinite .6s;
+}
+.tl-hero__float--verified {
+  bottom: 10%;
+  left: -4%;
+  animation: tl-hero-float 6s ease-in-out infinite 1.4s;
+}
+
+.tl-hero__float-ring {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 3px solid var(--color-accent);
+  flex: 0 0 auto;
+}
+.tl-hero__float-shield {
+  display: grid;
+  place-items: center;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-success, #16a34a) 14%, transparent);
+  color: var(--color-success, #16a34a);
+  flex: 0 0 auto;
+}
+.tl-hero__float-shield svg { width: 16px; height: 16px; }
+
+@keyframes tl-hero-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-12px); }
+}
+
+/* Phones: the pills would sit over the bottle, so tuck them to the edges. */
+@media (max-width: 600px) {
+  .tl-hero__float { padding: .5rem .7rem; }
+  .tl-hero__float--purity   { top: 2%; right: 0; }
+  .tl-hero__float--verified { bottom: 4%; left: 0; }
+  .tl-hero__float strong { font-size: .82rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tl-hero__visual--cutout img,
+  .tl-hero__float { animation: none; }
 }
 .tl-hero__labchip {
   position: absolute;
@@ -1266,13 +1379,52 @@ body.admin-bar { --admin-bar-h: 32px; }
 }
 .tl-cat-card h3 { margin: 0; font-size: 1.15rem; }
 .tl-cat-card__count { font-size: .78rem; color: var(--color-faint); white-space: nowrap; }
+/*
+ * The peptide names scroll as one line instead of wrapping into a block.
+ * The track holds two copies of the list and shifts by exactly half its
+ * width, so the loop is seamless; it pauses on hover and focus so the links
+ * can actually be clicked, and the edges fade rather than cutting off.
+ */
+.tl-cat-card__marquee {
+  margin-top: .9rem;
+  display: flex;
+  gap: .35rem;
+  width: 100%;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 88%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 6%, #000 88%, transparent);
+}
+.tl-cat-card__marquee:hover .tl-cat-card__list,
+.tl-cat-card__marquee:focus-within .tl-cat-card__list {
+  animation-play-state: paused;
+}
+
 .tl-cat-card__list {
-  margin: .9rem 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
   display: flex;
-  flex-wrap: wrap;
+  flex: 0 0 auto;
   gap: .35rem;
+  animation: tl-chip-scroll 26s linear infinite;
+}
+.tl-cat-card__list li { flex: 0 0 auto; }
+
+@keyframes tl-chip-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(calc(-100% - .35rem)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tl-cat-card__list { animation: none; }
+  .tl-cat-card__marquee {
+    flex-wrap: wrap;
+    overflow: visible;
+    -webkit-mask-image: none;
+            mask-image: none;
+  }
+  .tl-cat-card__marquee .tl-cat-card__list[aria-hidden="true"] { display: none; }
+  .tl-cat-card__list { flex-wrap: wrap; }
 }
 .tl-cat-card__list a {
   display: inline-block;

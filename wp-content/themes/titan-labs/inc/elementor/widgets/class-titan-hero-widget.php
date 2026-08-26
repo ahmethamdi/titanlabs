@@ -325,9 +325,43 @@ class Titan_Hero_Widget extends Titan_Widget_Base {
 				}
 				?>
 				<div class="<?php echo esc_attr( $hero_visual_class ); ?>">
+					<?php if ( $hero_img && ! $hero_prod ) : ?>
+						<span class="tl-hero__rings" aria-hidden="true"></span>
+					<?php endif; ?>
+
 					<?php if ( $hero_img ) : ?>
 						<img src="<?php echo esc_url( $hero_img ); ?>"
 							alt="<?php echo esc_attr( $hero_alt ); ?>">
+
+						<?php
+						/*
+						 * The cut-out bottle floats on the page, so the lab data
+						 * that justifies the headline is pinned around it rather
+						 * than tucked inside a card it no longer has.
+						 */
+						if ( ! $hero_prod ) :
+							?>
+							<span class="tl-hero__float tl-hero__float--purity">
+								<span class="tl-hero__float-ring" aria-hidden="true"></span>
+								<span>
+									<strong>&ge;99%</strong>
+									<em><?php esc_html_e( 'Avg. purity', 'titan-labs' ); ?></em>
+								</span>
+							</span>
+							<span class="tl-hero__float tl-hero__float--verified">
+								<span class="tl-hero__float-shield" aria-hidden="true">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+										stroke-linecap="round" stroke-linejoin="round">
+										<path d="M12 3l7 3v6c0 4.4-3 7.6-7 9-4-1.4-7-4.6-7-9V6z"/>
+										<path d="M9 12l2 2 4-4"/>
+									</svg>
+								</span>
+								<span>
+									<strong><?php esc_html_e( 'Lab verified', 'titan-labs' ); ?></strong>
+									<em>HPLC &middot; MS &middot; COA</em>
+								</span>
+							</span>
+						<?php endif; ?>
 
 						<?php
 						if ( $hero_prod ) :

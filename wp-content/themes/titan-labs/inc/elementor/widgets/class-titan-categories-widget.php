@@ -191,15 +191,35 @@ class Titan_Categories_Widget extends Titan_Widget_Base {
 				</div>
 
 				<?php if ( $products ) : ?>
-					<ul class="tl-cat-card__list">
-						<?php foreach ( $products as $product ) : ?>
-							<li>
-								<a href="<?php echo esc_url( $product->get_permalink() ); ?>">
-									<?php echo esc_html( $product->get_name() ); ?>
-								</a>
-							</li>
-						<?php endforeach; ?>
-					</ul>
+					<?php
+					/*
+					 * The peptide names run as a single marquee line rather than
+					 * wrapping: a card lists a sample of a category, so the row
+					 * should read as "and more like this" instead of squaring off
+					 * into a block. The list is printed twice so the track can
+					 * loop seamlessly — the copy is hidden from assistive tech.
+					 */
+					?>
+					<div class="tl-cat-card__marquee">
+						<ul class="tl-cat-card__list">
+							<?php foreach ( $products as $product ) : ?>
+								<li>
+									<a href="<?php echo esc_url( $product->get_permalink() ); ?>">
+										<?php echo esc_html( $product->get_name() ); ?>
+									</a>
+								</li>
+							<?php endforeach; ?>
+						</ul>
+						<ul class="tl-cat-card__list" aria-hidden="true">
+							<?php foreach ( $products as $product ) : ?>
+								<li>
+									<a href="<?php echo esc_url( $product->get_permalink() ); ?>" tabindex="-1">
+										<?php echo esc_html( $product->get_name() ); ?>
+									</a>
+								</li>
+							<?php endforeach; ?>
+						</ul>
+					</div>
 				<?php endif; ?>
 			</div>
 			<?php
