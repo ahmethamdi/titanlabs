@@ -9,7 +9,6 @@ defined( 'ABSPATH' ) || exit;
 
 use Elementor\Controls_Manager;
 use Elementor\Repeater;
-use Elementor\Utils;
 
 /**
  * The homepage hero: eyebrow, headline, sub-headline, CTAs and trust stats.
@@ -255,7 +254,17 @@ class Titan_Hero_Widget extends Titan_Widget_Base {
 				 * in the headline.
 				 */
 				$hero_img  = ! empty( $s['image']['url'] ) ? $s['image']['url'] : '';
-				$hero_alt  = ! empty( $s['image']['url'] ) ? Utils::get_image_alt( $s['image'] ) : '';
+				/*
+				 * Read the alt text from WordPress rather than
+				 * Elementor\Utils::get_image_alt(), which no longer exists in
+				 * current Elementor and threw a fatal the moment a hero image
+				 * was set — taking the whole Elementor render down with it and
+				 * silently falling back to the coded template.
+				 */
+				$hero_alt = '';
+				if ( ! empty( $s['image']['id'] ) ) {
+					$hero_alt = (string) get_post_meta( (int) $s['image']['id'], '_wp_attachment_image_alt', true );
+				}
 				$hero_prod = null;
 
 				if ( ! $hero_img && function_exists( 'wc_get_product' ) ) {
@@ -302,7 +311,20 @@ class Titan_Hero_Widget extends Titan_Widget_Base {
 					}
 				}
 				?>
-				<div class="tl-hero__visual<?php echo $hero_prod ? ' tl-hero__visual--product' : ''; ?>">
+				<?php
+				/*
+				 * An image chosen in the editor is a cut-out render on a
+				 * transparent background, so it stands on its own instead of
+				 * sitting in the framed card the catalogue fallback needs.
+				 */
+				$hero_visual_class = 'tl-hero__visual';
+				if ( $hero_prod ) {
+					$hero_visual_class .= ' tl-hero__visual--product';
+				} elseif ( $hero_img ) {
+					$hero_visual_class .= ' tl-hero__visual--cutout';
+				}
+				?>
+				<div class="<?php echo esc_attr( $hero_visual_class ); ?>">
 					<?php if ( $hero_img ) : ?>
 						<img src="<?php echo esc_url( $hero_img ); ?>"
 							alt="<?php echo esc_attr( $hero_alt ); ?>">

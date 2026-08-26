@@ -1154,6 +1154,29 @@ body.admin-bar { --admin-bar-h: 32px; }
   object-fit: contain;
   padding: clamp(1.25rem, .5rem + 2.5vw, 2.5rem);
 }
+
+/*
+ * A cut-out product render on a transparent background. It carries its own
+ * edge, so the framed white card works against it — no panel, no shadow, and
+ * the tall bottle is shown whole rather than cropped to a 4:3 window.
+ */
+.tl-hero__visual--cutout {
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  overflow: visible;
+  aspect-ratio: auto;
+}
+.tl-hero__visual--cutout img {
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: clamp(320px, 46vh, 560px);
+  object-fit: contain;
+  margin-inline: auto;
+  /* Ground the floating bottle without drawing a box around it. */
+  filter: drop-shadow(0 26px 34px rgba(11, 18, 32, .18));
+}
 .tl-hero__labchip {
   position: absolute;
   left: 1rem; bottom: 1rem;

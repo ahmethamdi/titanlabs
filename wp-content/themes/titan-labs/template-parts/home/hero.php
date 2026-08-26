@@ -43,9 +43,9 @@ $cta_url    = $cta_url && str_starts_with( $cta_url, 'http' ) ? $cta_url : home_
 			</dl>
 		</div>
 
-		<div class="tl-hero__visual">
+		<div class="tl-hero__visual<?php echo $hero_image ? ' tl-hero__visual--cutout' : ''; ?>">
 			<?php if ( $hero_image ) : ?>
-				<?php echo wp_get_attachment_image( $hero_image, 'titan-wide', false, array( 'alt' => '' ) ); ?>
+				<?php echo wp_get_attachment_image( $hero_image, 'full', false, array( 'alt' => '' ) ); ?>
 			<?php else : ?>
 				<div class="tl-text-center" style="padding:2rem">
 					<span class="tl-logo__mark" aria-hidden="true"
