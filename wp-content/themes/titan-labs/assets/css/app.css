@@ -1167,8 +1167,14 @@ body.admin-bar { --admin-bar-h: 32px; }
   overflow: visible;
   aspect-ratio: auto;
 }
-/* The rings and the bottle share one grid cell so they stay concentric;
-   without that the bottle stacked below the halo. */
+/*
+ * The supplied hero render has its transparency flattened into a painted
+ * checkerboard, and the checker's two greys hold the same values as the white
+ * label — so nothing can separate them by colour without eating the bottle.
+ * The checker is repainted white on import instead of deleted, which keeps the
+ * bottle whole, and the art then sits on white here so the repaint is
+ * invisible. Swap in a real RGBA export later and this still works.
+ */
 .tl-hero__visual--cutout {
   display: grid;
   grid-template-areas: "stack";
@@ -1178,7 +1184,13 @@ body.admin-bar { --admin-bar-h: 32px; }
    box itself and must stay out of the grid flow. */
 .tl-hero__visual--cutout > img,
 .tl-hero__visual--cutout > .tl-hero__rings { grid-area: stack; }
-.tl-hero__visual--cutout img {
+/*
+ * Elementor ships `.elementor img { border-radius: 0; box-shadow: none }` at
+ * the same specificity as a single class, and it loads after the theme — so a
+ * plain `.tl-hero__visual--cutout img` rule lost the corners and the lift
+ * while its other declarations applied. The doubled class outranks it.
+ */
+.tl-hero__visual--cutout.tl-hero__visual--cutout img {
   position: relative;
   z-index: 1;
   width: auto;
@@ -1187,8 +1199,12 @@ body.admin-bar { --admin-bar-h: 32px; }
   max-height: clamp(320px, 46vh, 560px);
   object-fit: contain;
   margin-inline: auto;
-  /* Ground the floating bottle without drawing a box around it. */
-  filter: drop-shadow(0 26px 34px rgba(11, 18, 32, .18));
+  /* The render carries a white ground, so it reads as a print on a card
+     rather than a floating cut-out. Rounded and lifted to suit. */
+  background: #fff;
+  border-radius: var(--radius-xl);
+  padding: clamp(.75rem, .4rem + 1vw, 1.5rem);
+  box-shadow: 0 26px 60px -18px rgba(11, 18, 32, .26);
   animation: tl-hero-float 6s ease-in-out infinite;
 }
 
