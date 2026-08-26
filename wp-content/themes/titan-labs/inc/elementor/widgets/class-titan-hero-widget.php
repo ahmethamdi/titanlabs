@@ -253,7 +253,27 @@ class Titan_Hero_Widget extends Titan_Widget_Base {
 				 * has, and label it with the lab data that justifies the claim
 				 * in the headline.
 				 */
-				$hero_img  = ! empty( $s['image']['url'] ) ? $s['image']['url'] : '';
+				$hero_img = ! empty( $s['image']['url'] ) ? $s['image']['url'] : '';
+				$hero_att = ! empty( $s['image']['id'] ) ? (int) $s['image']['id'] : 0;
+
+				/*
+				 * Fall back to the Customizer's hero image when the widget has
+				 * none of its own. Without this the Customizer control silently
+				 * did nothing on an Elementor-built homepage: it writes a theme
+				 * mod the widget never read, so picking an image there appeared
+				 * to have no effect at all.
+				 */
+				if ( ! $hero_img ) {
+					$mod_id = (int) get_theme_mod( 'titan_hero_image', 0 );
+					if ( $mod_id ) {
+						$mod_url = wp_get_attachment_image_url( $mod_id, 'full' );
+						if ( $mod_url ) {
+							$hero_img = $mod_url;
+							$hero_att = $mod_id;
+						}
+					}
+				}
+
 				/*
 				 * Read the alt text from WordPress rather than
 				 * Elementor\Utils::get_image_alt(), which no longer exists in
@@ -261,10 +281,9 @@ class Titan_Hero_Widget extends Titan_Widget_Base {
 				 * was set — taking the whole Elementor render down with it and
 				 * silently falling back to the coded template.
 				 */
-				$hero_alt = '';
-				if ( ! empty( $s['image']['id'] ) ) {
-					$hero_alt = (string) get_post_meta( (int) $s['image']['id'], '_wp_attachment_image_alt', true );
-				}
+				$hero_alt = $hero_att
+					? (string) get_post_meta( $hero_att, '_wp_attachment_image_alt', true )
+					: '';
 				$hero_prod = null;
 
 				if ( ! $hero_img && function_exists( 'wc_get_product' ) ) {
