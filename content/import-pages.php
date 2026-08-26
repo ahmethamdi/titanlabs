@@ -27,6 +27,7 @@ $map = array(
 	'legal'     => array( 'legal-notice', 'Legal Notice' ),
 	'wholesale' => array( 'wholesale', 'Wholesale & Institutional Supply' ),
 	'affiliate' => array( 'affiliate-program', 'Partner Programme' ),
+	'certificates' => array( 'certificates', 'Certificates & Quality Documentation' ),
 );
 
 $done    = 0;

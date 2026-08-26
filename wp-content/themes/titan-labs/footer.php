@@ -50,6 +50,7 @@ $shop_url = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 
 			titan_footer_menu( 'footer-help', __( 'Help', 'titan-labs' ), array(
 				__( 'Delivery & Shipping', 'titan-labs' ) => home_url( '/shipping-policy/' ),
 				__( 'FAQ', 'titan-labs' )                 => home_url( '/faq/' ),
+				__( 'Certificates', 'titan-labs' )        => home_url( '/certificates/' ),
 				__( 'Refunds', 'titan-labs' )             => home_url( '/refund-policy/' ),
 				__( 'Peptide Calculator', 'titan-labs' )  => home_url( '/peptide-calculator/' ),
 				__( 'Track Order', 'titan-labs' )         => home_url( '/track-order/' ),
