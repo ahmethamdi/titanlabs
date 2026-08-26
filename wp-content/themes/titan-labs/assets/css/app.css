@@ -3337,3 +3337,151 @@ html.tl-gated .tl-agegate { display: grid; }
     transition: none;
   }
 }
+
+/* ==========================================================================
+   Mega menu
+   ==========================================================================
+   A top-level nav item with children opens a full-width panel: titled
+   columns of links, then a real product as the closing card. The panel is
+   anchored to the header rather than the item, so it spans the page the way
+   the columns need. */
+
+.tl-nav__list > .tl-has-mega { position: static; }
+
+.tl-mega {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity .18s ease, transform .18s ease, visibility .18s;
+  z-index: 90;
+}
+
+.tl-has-mega:hover > .tl-mega,
+.tl-has-mega:focus-within > .tl-mega {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+/* Panels without a promo card (Help, and anything else that is not the shop)
+   let the columns use the full width instead of leaving a 300px hole. */
+.tl-mega__inner {
+  max-width: var(--container);
+  margin-inline: auto;
+  padding: 2.25rem 20px 2.5rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: start;
+}
+.tl-mega__inner:has(.tl-mega__promo) {
+  grid-template-columns: minmax(0, 1fr) 300px;
+}
+
+.tl-mega__cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tl-mega__col > ul { margin: 0; padding: 0; list-style: none; }
+
+/* The column heading is a label, not a link — mono to match the eyebrows. */
+.tl-mega__title {
+  font-family: var(--font-mono);
+  font-size: .7rem;
+  font-weight: 500;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin: 0 0 .9rem;
+  padding-bottom: .6rem;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.tl-mega__col a {
+  display: block;
+  padding: .4rem 0;
+  color: var(--color-ink);
+  font-size: .95rem;
+}
+.tl-mega__col a:hover { color: var(--color-accent); }
+
+/* Promo card — a product, so the menu shows stock rather than decoration. */
+.tl-mega__promo {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-panel);
+  transition: border-color .18s ease, transform .18s ease;
+}
+.tl-mega__promo:hover {
+  border-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
+  transform: translateY(-2px);
+}
+.tl-mega__promo-media {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: var(--color-surface);
+}
+.tl-mega__promo-media img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  padding: .75rem;
+}
+.tl-mega__promo-body {
+  display: block;
+  padding: .9rem 1rem 1.1rem;
+}
+.tl-mega__promo-chip {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  letter-spacing: .08em;
+  color: var(--color-accent-ink);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  padding: .2rem .5rem;
+  border-radius: 999px;
+  margin-bottom: .45rem;
+}
+.tl-mega__promo-body strong {
+  display: block;
+  font-family: var(--font-display);
+  color: var(--color-ink-strong);
+  margin-bottom: .3rem;
+}
+.tl-mega__promo-cta {
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+/* Narrower desktops: the promo card is the first thing to go. */
+@media (max-width: 1100px) {
+  .tl-mega__inner { grid-template-columns: minmax(0, 1fr); }
+  .tl-mega__promo { display: none; }
+}
+
+/* The mega panel is desktop-only; phones use the existing drawer accordion. */
+@media (max-width: 1023px) {
+  .tl-mega { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tl-mega { transition: none; }
+  .tl-mega__promo { transition: none; }
+}
